@@ -2,13 +2,13 @@
 
 ## Objetivo
 
-O **CheckupNow!** é uma aplicação web voltada para o gerenciamento e agendamento de consultas médicas. O objetivo principal da plataforma é oferecer autonomia para que o próprio paciente marque e gerencie suas consultas, desde exames de rotina até visitas a especialistas. Com isso, a aplicação visa não apenas facilitar a vida do paciente, mas também otimizar a organização e o tempo de médicos e moderadores.
+O **CheckupNow!** é uma aplicação web voltada para o gerenciamento e agendamento de consultas médicas. O objetivo principal da plataforma é oferecer autonomia para que o próprio paciente marque e gerencie suas consultas — desde exames de rotina até visitas a especialistas. Com isso, a aplicação visa não apenas facilitar a vida do paciente, mas também otimizar a organização e o tempo de médicos e moderadores.
 
 ---
 
 ## Funcionalidades Principais
 
-A aplicação conta com as seguintes funcionalidades para o fluxo do paciente:
+Com base na arquitetura da informação definida, a aplicação conta com as seguintes funcionalidades para o fluxo do paciente:
 
 *   **Autenticação e Cadastro:**
     *   **Login:** Acesso seguro utilizando e-mail e senha previamente cadastrados.
