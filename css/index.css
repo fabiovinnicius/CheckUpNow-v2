@@ -1,4 +1,3 @@
-/* Layout Principal do Card */
 .card {
   background-color: var(--card-bg);
   width: 100%;
@@ -11,9 +10,6 @@
   z-index: 1;
 }
 
-/* -----------------------------
-   Lado Esquerdo: Hero Section
------------------------------ */
 .hero-section {
   flex: 1;
   padding: 60px;
@@ -51,9 +47,6 @@
   line-height: 1.4;
 }
 
-/* -----------------------------
-   Lado Direito: Form Section
------------------------------ */
 .form-section {
   flex: 1;
   padding: 60px 80px;
@@ -79,7 +72,7 @@
   width: 100%;
   padding: 14px 18px;
   border: 1px solid var(--border-color);
-  border-radius: 14px; /* Bordas bem arredondadas conforme design */
+  border-radius: 14px; 
   font-size: 14px;
   font-family: var(--font-geist);
   color: var(--text-dark);
@@ -134,7 +127,6 @@
   cursor: pointer;
 }
 
-/* Custom Checkbox Redondo */
 .checkbox-group input[type="checkbox"] {
   appearance: none;
   width: 16px;
@@ -185,9 +177,6 @@
   transform: scale(0.98);
 }
 
-/* -----------------------------
-   Responsividade
------------------------------ */
 @media (max-width: 850px) {
   .card {
     flex-direction: column;
