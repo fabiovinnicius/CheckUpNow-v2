@@ -83,6 +83,14 @@
   flex-direction: column;
 }
 
+.form-grid .input-group label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 8px;
+  display: block;
+}
+
 .form-grid select {
   width: 100%;
   padding: 14px 18px;
