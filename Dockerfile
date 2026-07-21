@@ -1,18 +1,15 @@
-FROM nginx:1.27-alpine
+# Stage 1: Build Java Spring Boot app with Maven
+FROM maven:3.9-eclipse-temurin-21-alpine AS build
+WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests
 
-RUN rm -rf /usr/share/nginx/html/*
+# Stage 2: Run the Java app with JRE 21
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+COPY --from=build /app/target/checkupnow-1.0.0.jar app.jar
 
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 8080
 
-COPY . /usr/share/nginx/html
-
-RUN rm -f /usr/share/nginx/html/Dockerfile \
-           /usr/share/nginx/html/docker-compose.yml \
-           /usr/share/nginx/html/nginx.conf \
-           /usr/share/nginx/html/.dockerignore \
-           /usr/share/nginx/html/README.md \
-           /usr/share/nginx/html/ABOUT.md
-
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
