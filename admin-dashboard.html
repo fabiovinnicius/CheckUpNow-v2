@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CheckUp Now! - Painel Administrativo</title>
+    <link rel="icon" href="data:image/svg+xml;charset=utf-8,%3Csvg width='100' height='100' viewBox='0 0 100 100' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='35' y='0' width='30' height='100' rx='10' fill='%2352D468'/%3E%3Crect x='0' y='35' width='100' height='30' rx='10' fill='%2352D468'/%3E%3Cpath d='M25 55 L40 70 L85 30' stroke='white' stroke-width='12' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" type="image/svg+xml">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/style.css">
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <style>
+        .badge-admin-header {
+            background-color: #D4F4DF;
+            color: #1D6B35;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 12px;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+        #perfil-admin-main::-webkit-scrollbar { display: none; }
+        #perfil-admin-main { -ms-overflow-style: none; scrollbar-width: none; }
+        #perfil-admin-equipe::-webkit-scrollbar, #perfil-admin-info::-webkit-scrollbar, #perfil-admin-senha::-webkit-scrollbar, #perfil-admin-add-equipe::-webkit-scrollbar { width: 6px; }
+        #perfil-admin-equipe::-webkit-scrollbar-track, #perfil-admin-info::-webkit-scrollbar-track, #perfil-admin-senha::-webkit-scrollbar-track, #perfil-admin-add-equipe::-webkit-scrollbar-track { background: transparent; }
+        #perfil-admin-equipe::-webkit-scrollbar-thumb, #perfil-admin-info::-webkit-scrollbar-thumb, #perfil-admin-senha::-webkit-scrollbar-thumb, #perfil-admin-add-equipe::-webkit-scrollbar-thumb { background: #E0E0E0; border-radius: 10px; }
+        .avatar-initials {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        .profile-admin-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #0056D2;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-wave bg-wave-tl"></div>
+    <div class="bg-wave bg-wave-br"></div>
+    <div class="card card-dashboard">
+        <div id="tab-recepcao" class="tab-content active">
+            <div id="admin-main-menu" style="width: 100%;">
+                <div class="dash-header" style="text-align: center; display: flex; flex-direction: column; align-items: center; margin-bottom: 16px; padding-top: 0; padding-bottom: 8px;">
+                    <span class="badge-admin-header">Administração</span>
+                    <h1 style="font-size: 22px; margin-bottom: 4px;">Painel de recepção</h1>
+                    <p style="font-size: 14px;">Resumo do dia e acessos rápidos.</p>
+                </div>
+                <style>
+                    .admin-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 16px 32px; width: 100%; max-width: 1000px; margin: 0 auto; }
+                    .metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; height: 100%; }
+                    .metric-card { background: white; border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 8px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; flex-direction: column; justify-content: center; }
+                    .metric-card h3 { font-size: 24px; font-weight: 700; color: #111; margin: 0 0 2px 0; }
+                    .metric-card p { font-size: 10px; color: #666; margin: 0; text-transform: uppercase; font-weight: 700; }
+                    .section-title { font-size: 16px; font-weight: 700; color: #111; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+                    .status-indicator { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+                    .status-online { background-color: #52D468; }
+                    .status-busy { background-color: #FFB020; }
+                    .status-offline { background-color: #FF4D4D; }
+                </style>
+                <div class="admin-layout">
+                    <div style="display: flex; flex-direction: column;">
+                        <h3 class="section-title">Resumo Hoje</h3>
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <h3 style="color: #0056D2;">24</h3>
+                                <p>Agendados</p>
+                            </div>
+                            <div class="metric-card">
+                                <h3 style="color: #FFB020;">5</h3>
+                                <p>Aguardando</p>
+                            </div>
+                            <div class="metric-card">
+                                <h3 style="color: #E53935;">2</h3>
+                                <p>Faltas</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column;">
+                        <h3 class="section-title">
+                            Próximos a serem chamados
+                            <span style="font-size: 13px; color: #0056D2; cursor: pointer; font-weight: 600; background: #E6F0FF; padding: 4px 10px; border-radius: 12px;" class="admin-grid-btn" data-target="admin-hoje">Ver todos</span>
+                        </h3>
+                        <div class="history-list" style="flex: 1;">
+                            <div class="history-card" style="padding: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); height: 100%;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <strong style="font-size: 14px; color: #111;">Maria Clara Silva</strong>
+                                    <span style="font-size: 12px; font-weight: 700; color: #1D6B35; background: #E6F4EA; padding: 2px 8px; border-radius: 8px;">09:00</span>
+                                </div>
+                                <p style="font-size: 12px; color: #666; margin: 0 0 12px 0; display: flex; align-items: center; gap: 6px;">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                    Dr. Roberto Costa (Sala 2)
+                                </p>
+                                <button style="width: 100%; background: #E6F0FF; color: #0056D2; border: none; padding: 8px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.2s; margin-top: auto;" onmouseover="this.style.background='#cce0ff'" onmouseout="this.style.background='#E6F0FF'" onclick="alert('Paciente chamado no painel!')">Chamar Painel</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column;">
+                        <h3 class="section-title">Ações Rápidas</h3>
+                        <div class="specialties-grid" style="grid-template-columns: 1fr 1fr; gap: 12px; max-width: 100%;">
+                            <button class="specialty-btn admin-grid-btn" data-target="admin-hoje" style="background: #0056D2; color: white; border-color: #0056D2; min-height: 60px; padding: 10px;">Consultas de hoje</button>
+                            <button class="specialty-btn admin-grid-btn" data-target="admin-nova" style="background: #1D6B35; color: white; border-color: #1D6B35; min-height: 60px; padding: 10px;">Nova consulta</button>
+                            <button class="specialty-btn" style="grid-column: span 2; display: flex; justify-content: center; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; min-height: 60px; padding: 10px;" onclick="alert('Funcionalidade de financeiro em breve.')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg>
+                                Fechamento de Caixa
+                            </button>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column;">
+                        <h3 class="section-title">Equipe Médica Hoje</h3>
+                        <div class="history-list" style="gap: 8px;">
+                            <div class="history-card" style="flex-direction: row; align-items: center; justify-content: space-between; padding: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+                                <div style="display: flex; align-items: center;">
+                                    <div style="width: 32px; height: 32px; background: #F0F0F0; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: 700; color: #666; margin-right: 12px; font-size: 12px;">RC</div>
+                                    <div>
+                                        <strong style="font-size: 14px; color: #111;">Dr. Roberto Costa</strong>
+                                        <p style="font-size: 11px; color: #666; margin: 4px 0 0 0; display: flex; align-items: center;">
+                                            <span class="status-indicator status-online"></span> Sala 2 - Em atendimento
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="history-card" style="flex-direction: row; align-items: center; justify-content: space-between; padding: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+                                <div style="display: flex; align-items: center;">
+                                    <div style="width: 32px; height: 32px; background: #F0F0F0; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: 700; color: #666; margin-right: 12px; font-size: 12px;">AM</div>
+                                    <div>
+                                        <strong style="font-size: 14px; color: #111;">Dra. Ana Mendes</strong>
+                                        <p style="font-size: 11px; color: #666; margin: 4px 0 0 0; display: flex; align-items: center;">
+                                            <span class="status-indicator status-offline"></span> Atrasada (15 min)
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="admin-hoje" class="admin-section history-container" style="display: none;">
+                <button type="button" class="btn-back btn-back-admin">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    Voltar ao painel
+                </button>
+                <div class="dash-header" style="text-align: left; margin-bottom: 20px;">
+                    <h2 style="font-size: 20px; font-weight: 700; color: #111;">Consultas de hoje</h2>
+                </div>
+                <div class="history-list">
+                    <div class="history-card">
+                        <div class="history-card-top-right">09:00</div>
+                        <div class="history-row">
+                            <strong>Maria Clara Silva</strong>
+                        </div>
+                        <div class="history-row">
+                            <svg class="h-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>
+                            <span>Clínico Geral - Dr. Roberto Costa</span>
+                        </div>
+                        <div class="history-row space-between" style="margin-top: 10px;">
+                            <span class="status-pill ongoing"><span class="dot"></span> Aguardando</span>
+                            <div class="h-actions">
+                                <button class="btn-admin-action btn-confirm-presence" style="background: #1D6B35; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 12px;">Chegou</button>
+                                <button class="btn-admin-action btn-no-show" style="background: #EEE; color: #333; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 12px; margin-left: 6px;">Faltou</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="admin-nova" class="admin-section booking-section" style="display: none;">
+                <button type="button" class="btn-back btn-back-admin">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    Voltar ao painel
+                </button>
+                <h2 class="booking-title">Agendar nova consulta</h2>
+                <form class="booking-form" action="#" method="GET">
+                    <div class="input-group">
+                        <label>CPF ou Nome do Paciente</label>
+                        <input type="text" placeholder="Buscar paciente cadastrado" style="padding: 14px 18px; border: 1px solid var(--border-color); border-radius: 14px; font-size: 14px;">
+                    </div>
+                    <button type="button" class="btn-primary" style="margin-top: 16px;" onclick="alert('Consulta agendada!')">Confirmar Agendamento</button>
+                </form>
+            </div>
+        </div>
+        <div id="tab-pacientes" class="tab-content" style="overflow-y: hidden;">
+            <style>
+                #tab-pacientes .history-list::-webkit-scrollbar { width: 6px; }
+                #tab-pacientes .history-list::-webkit-scrollbar-track { background: transparent; }
+                #tab-pacientes .history-list::-webkit-scrollbar-thumb { background: #E0E0E0; border-radius: 10px; }
+            </style>
+            <div class="dash-header" style="text-align: center; display: flex; flex-direction: column; align-items: center; margin-bottom: 16px; padding-top: 0; padding-bottom: 8px; flex-shrink: 0;">
+                <span class="badge-admin-header">Administração</span>
+                <h1 style="font-size: 22px; margin-bottom: 4px;">Pacientes</h1>
+                <p style="font-size: 14px;">Busque, edite ou cadastre informações<br>dos pacientes atendidos.</p>
+            </div>
+            <div class="input-group" style="position: relative; margin-bottom: 20px; flex-shrink: 0; width: 100%; max-width: 600px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#AAA" stroke-width="2" style="position: absolute; left: 14px; top: 14px; width: 20px; height: 20px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input id="search-patient-input" type="text" placeholder="Buscar paciente" style="padding: 14px 18px 14px 44px; border: 1px solid var(--border-color); border-radius: 14px; font-size: 14px; width: 100%;">
+            </div>
+            <div class="history-list" style="flex: 1; overflow-y: auto; margin-bottom: 32px; width: 100%; max-width: 600px; padding-right: 8px;">
+                <div class="history-card" style="align-items: center; justify-content: space-between; flex-direction: row; cursor: pointer; padding: 16px;">
+                    <div style="display: flex; align-items: center;">
+                        <div class="avatar-initials" style="background: #0056D2; color: white;">MC</div>
+                        <div>
+                            <strong style="font-size: 15px; color: #111;">Maria Clara Santos</strong>
+                            <p style="font-size: 13px; color: #666; margin-top: 2px;">Última consulta: 12/06</p>
+                        </div>
+                    </div>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#CCC" stroke-width="2" style="width: 20px; height: 20px;"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+                <div class="history-card" style="align-items: center; justify-content: space-between; flex-direction: row; cursor: pointer; padding: 16px;">
+                    <div style="display: flex; align-items: center;">
+                        <div class="avatar-initials" style="background: #0056D2; color: white;">JP</div>
+                        <div>
+                            <strong style="font-size: 15px; color: #111;">João Pedro Lima</strong>
+                            <p style="font-size: 13px; color: #666; margin-top: 2px;">Consulta hoje: 15:30</p>
+                        </div>
+                    </div>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#CCC" stroke-width="2" style="width: 20px; height: 20px;"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+                <div class="history-card" style="align-items: center; justify-content: space-between; flex-direction: row; cursor: pointer; padding: 16px;">
+                    <div style="display: flex; align-items: center;">
+                        <div class="avatar-initials" style="background: #0056D2; color: white;">AB</div>
+                        <div>
+                            <strong style="font-size: 15px; color: #111;">Ana Beatriz Costa</strong>
+                            <p style="font-size: 13px; color: #666; margin-top: 2px;">Última consulta: 03/05</p>
+                        </div>
+                    </div>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#CCC" stroke-width="2" style="width: 20px; height: 20px;"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+                <div class="history-card" style="align-items: center; justify-content: space-between; flex-direction: row; cursor: pointer; padding: 16px;">
+                    <div style="display: flex; align-items: center;">
+                        <div class="avatar-initials" style="background: #0056D2; color: white;">CE</div>
+                        <div>
+                            <strong style="font-size: 15px; color: #111;">Carlos Eduardo Rocha</strong>
+                            <p style="font-size: 13px; color: #666; margin-top: 2px;">Consulta amanhã: 09:00</p>
+                        </div>
+                    </div>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#CCC" stroke-width="2" style="width: 20px; height: 20px;"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+            </div>
+            <button class="btn-primary" style="flex-shrink: 0; align-self: center; width: auto; padding: 10px 24px; font-size: 14px; border-radius: 12px; margin-bottom: 24px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Novo paciente
+            </button>
+        </div>
+        <div id="tab-agenda-config" class="tab-content" style="overflow-y: hidden;">
+            <div id="agenda-config-main" style="width: 100%; display: flex; flex-direction: column; align-items: center; flex: 1; overflow-y: auto;">
+                <div class="dash-header" style="text-align: center; display: flex; flex-direction: column; align-items: center;">
+                    <span class="badge-admin-header">Administração</span>
+                    <h1>Configurar agenda</h1>
+                    <p>Escolha abaixo a especialidade para configurar<br>os horários disponíveis desta semana.</p>
+                </div>
+                <div class="specialties-grid">
+                    <button class="specialty-btn config-spec-btn">Clínicas gerais</button>
+                    <button class="specialty-btn config-spec-btn">Psicologia e psiquiatria</button>
+                    <button class="specialty-btn config-spec-btn">Especialidades médicas</button>
+                    <button class="specialty-btn config-spec-btn">Genética médica</button>
+                    <button class="specialty-btn config-spec-btn">Consultas cirúrgicas</button>
+                    <button class="specialty-btn config-spec-btn">Geriatria</button>
+                    <button class="specialty-btn config-spec-btn">Pediatria</button>
+                    <button class="specialty-btn config-spec-btn">Outras especialidades</button>
+                </div>
+            </div>
+            <div id="agenda-config-times" style="display: none; width: 100%; flex-direction: column; align-items: center; flex: 1; min-height: 0;">
+                <div style="width: 100%; max-width: 600px; display: flex; align-items: center; justify-content: flex-start; margin-bottom: 24px; position: relative;">
+                    <button type="button" id="btn-back-agenda-config" style="background: none; border: none; font-size: 15px; font-weight: 600; color: #666; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                        Voltar
+                    </button>
+                </div>
+                <h2 id="config-specialty-title" style="font-size: 22px; font-weight: 700; color: #111; margin-bottom: 8px; text-align: center;">Especialidade</h2>
+                <p style="font-size: 14px; color: #666; margin-bottom: 24px; text-align: center;">Bloqueie ou libere os horários para agendamento.</p>
+                <div class="date-selector" style="max-width: 600px; margin-bottom: 24px;">
+                    <button class="date-btn active"><div class="day-name">Hoje</div><div class="day-number">12</div></button>
+                    <button class="date-btn"><div class="day-name">Seg</div><div class="day-number">13</div></button>
+                    <button class="date-btn"><div class="day-name">Ter</div><div class="day-number">14</div></button>
+                    <button class="date-btn"><div class="day-name">Qua</div><div class="day-number">15</div></button>
+                    <button class="date-btn"><div class="day-name">Qui</div><div class="day-number">16</div></button>
+                </div>
+                <style>
+                    .date-selector { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; width: 100%; scrollbar-width: thin; justify-content: center; }
+                    .date-selector::-webkit-scrollbar { height: 4px; }
+                    .date-selector::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+                    .date-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 64px; height: 74px; border-radius: 16px; border: 1px solid var(--border-color); background: white; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+                    .date-btn:hover { background: #F5F5F5; transform: translateY(-2px); }
+                    .date-btn.active { background: #0056D2; border-color: #0056D2; color: white; box-shadow: 0 4px 12px rgba(0,86,210,0.2); }
+                    .date-btn .day-name { font-size: 12px; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; color: #666; }
+                    .date-btn.active .day-name { color: rgba(255,255,255,0.8); }
+                    .date-btn .day-number { font-size: 20px; font-weight: 700; color: #111; }
+                    .date-btn.active .day-number { color: white; }
+                    .switch { position: relative; display: inline-block; width: 52px; height: 30px; margin-left: 12px; }
+                    .switch input { opacity: 0; width: 0; height: 0; }
+                    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #E0E0E0; transition: .3s; border-radius: 30px; }
+                    .slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 4px; bottom: 4px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+                    input:checked + .slider { background-color: #52D468; }
+                    input:checked + .slider:before { transform: translateX(22px); }
+                    input:disabled + .slider { background-color: #F0F0F0; cursor: not-allowed; }
+                    input:disabled + .slider:before { box-shadow: none; background-color: #DDD; }
+                    #agenda-times-list::-webkit-scrollbar { width: 6px; }
+                    #agenda-times-list::-webkit-scrollbar-track { background: transparent; }
+                    #agenda-times-list::-webkit-scrollbar-thumb { background: #E0E0E0; border-radius: 10px; }
+                    #agenda-times-list::-webkit-scrollbar-thumb:hover { background: #C0C0C0; }
+                </style>
+                <div id="agenda-times-list" class="history-list" style="width: 100%; max-width: 600px; flex: 1; overflow-y: auto; padding-right: 8px; margin-bottom: 24px;">
+                </div>
+            </div>
+        </div>
+        <div id="tab-perfil-admin" class="tab-content" style="overflow-y: hidden;">
+            <div id="perfil-admin-main" style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; overflow-y: auto; padding-bottom: 24px;">
+                <div class="dash-header" style="text-align: center; display: flex; flex-direction: column; align-items: center;">
+                    <span class="badge-admin-header">Administração</span>
+                    <h1>Perfil</h1>
+                    <p style="margin-bottom: 8px;">Veja seus dados e gerencie o acesso<br>da equipe.</p>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center; margin: 16px 0;">
+                    <div class="profile-admin-avatar">RS</div>
+                    <div style="font-size: 18px; font-weight: 700; color: #111; margin-bottom: 4px;">Renata Souza</div>
+                    <div style="background-color: #F0F0F0; color: #666; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">Administradora</div>
+                </div>
+                <div class="history-list">
+                    <div class="history-card" id="btn-perfil-info" style="align-items: center; justify-content: space-between; flex-direction: row; cursor: pointer; padding: 16px;">
+                        <div style="display: flex; align-items: center;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" style="width: 20px; height: 20px; margin-right: 12px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                            <strong style="margin: 0; font-size: 15px; color: #111;">Alterar informações</strong>
+                        </div>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#CCC" stroke-width="2" style="width: 20px; height: 20px;"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </div>
+                    <div class="history-card" id="btn-perfil-senha" style="align-items: center; justify-content: space-between; flex-direction: row; cursor: pointer; padding: 16px;">
+                        <div style="display: flex; align-items: center;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" style="width: 20px; height: 20px; margin-right: 12px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                            <strong style="margin: 0; font-size: 15px; color: #111;">Alterar senha</strong>
+                        </div>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#CCC" stroke-width="2" style="width: 20px; height: 20px;"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </div>
+                    <div class="history-card" id="btn-perfil-equipe" style="align-items: center; justify-content: space-between; flex-direction: row; cursor: pointer; padding: 16px;">
+                        <div style="display: flex; align-items: center;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" style="width: 20px; height: 20px; margin-right: 12px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                            <strong style="margin: 0; font-size: 15px; color: #111;">Equipe</strong>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <span style="background-color: #D4F4DF; color: #1D6B35; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 8px; margin-right: 8px;">admin</span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#CCC" stroke-width="2" style="width: 20px; height: 20px;"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="history-list" style="margin-top: 12px; margin-bottom: 12px;">
+                    <div class="history-card" style="align-items: center; justify-content: flex-start; flex-direction: row; cursor: pointer; padding: 16px;" onclick="window.location.href='index.html'">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#E53935" stroke-width="2" style="width: 20px; height: 20px; margin-right: 12px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        <strong style="margin: 0; font-size: 15px; color: #E53935;">Sair</strong>
+                    </div>
+                </div>
+            </div>
+            <div id="perfil-admin-info" style="display: none; width: 100%; flex-direction: column; align-items: center; flex: 1; overflow-y: auto;">
+                <div style="width: 100%; max-width: 600px; display: flex; align-items: center; justify-content: flex-start; margin-bottom: 24px;">
+                    <button type="button" class="btn-back-perfil" style="background: none; border: none; font-size: 15px; font-weight: 600; color: #666; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                        Voltar
+                    </button>
+                </div>
+                <h2 style="font-size: 22px; font-weight: 700; color: #111; margin-bottom: 24px;">Alterar Informações</h2>
+                <form class="booking-form" style="width: 100%; max-width: 600px;">
+                    <div class="input-group">
+                        <label>Nome Completo</label>
+                        <input type="text" value="Renata Souza" style="padding: 14px 18px; border: 1px solid var(--border-color); border-radius: 14px; font-size: 14px;">
+                    </div>
+                    <div class="input-group">
+                        <label>E-mail</label>
+                        <input type="email" value="renata@checkupnow.com" style="padding: 14px 18px; border: 1px solid var(--border-color); border-radius: 14px; font-size: 14px;">
+                    </div>
+                    <div class="input-group">
+                        <label>Telefone</label>
+                        <input type="text" value="(11) 98765-4321" style="padding: 14px 18px; border: 1px solid var(--border-color); border-radius: 14px; font-size: 14px;">
+                    </div>
+                    <button type="button" class="btn-primary" style="margin-top: 24px;" onclick="alert('Informações atualizadas com sucesso!')">Salvar Alterações</button>
+                </form>
+            </div>
+            <div id="perfil-admin-senha" style="display: none; width: 100%; flex-direction: column; align-items: center; flex: 1; overflow-y: auto;">
+                <div style="width: 100%; max-width: 600px; display: flex; align-items: center; justify-content: flex-start; margin-bottom: 24px;">
+                    <button type="button" class="btn-back-perfil" style="background: none; border: none; font-size: 15px; font-weight: 600; color: #666; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                        Voltar
+                    </button>
+                </div>
+                <h2 style="font-size: 22px; font-weight: 700; color: #111; margin-bottom: 24px;">Alterar Senha</h2>
+                <form class="booking-form" style="width: 100%; max-width: 600px;">
+                    <div class="input-group">
+                        <label>Senha Atual</label>
+                        <input type="password" placeholder="Digite sua senha atual" style="padding: 14px 18px; border: 1px solid var(--border-color); border-radius: 14px; font-size: 14px;">
+                    </div>
+                    <div class="input-group">
+                        <label>Nova Senha</label>
+                        <input type="password" placeholder="Crie uma nova senha" style="padding: 14px 18px; border: 1px solid var(--border-color); border-radius: 14px; font-size: 14px;">
+                    </div>
+                    <div class="input-group">
+                        <label>Repetir Nova Senha</label>
+                        <input type="password" placeholder="Repita a nova senha" style="padding: 14px 18px; border: 1px solid var(--border-color); border-radius: 14px; font-size: 14px;">
+                    </div>
+                    <button type="button" class="btn-primary" style="margin-top: 24px;" onclick="alert('Senha alterada com sucesso!')">Atualizar Senha</button>
+                </form>
+            </div>
+            <div id="perfil-admin-equipe" style="display: none; width: 100%; flex-direction: column; align-items: center; flex: 1; overflow-y: auto;">
+                <div style="width: 100%; max-width: 600px; display: flex; align-items: center; justify-content: flex-start; margin-bottom: 24px;">
+                    <button type="button" class="btn-back-perfil" style="background: none; border: none; font-size: 15px; font-weight: 600; color: #666; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                        Voltar
+                    </button>
+                </div>
+                <div style="width: 100%; max-width: 600px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                    <h2 style="font-size: 22px; font-weight: 700; color: #111; margin: 0;">Equipe</h2>
+                    <button type="button" id="btn-add-member" style="background: none; border: none; color: var(--primary); font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        Adicionar
+                    </button>
+                </div>
+                <div id="team-members-list" class="history-list" style="width: 100%; max-width: 600px; padding-bottom: 30px;">
+                </div>
+            </div>
+            <div id="perfil-admin-add-equipe" style="display: none; width: 100%; flex-direction: column; align-items: center; flex: 1; overflow-y: auto;">
+                <div style="width: 100%; max-width: 600px; display: flex; align-items: center; justify-content: flex-start; margin-bottom: 24px;">
+                    <button type="button" class="btn-back-perfil" style="background: none; border: none; font-size: 15px; font-weight: 600; color: #666; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                        Voltar
+                    </button>
+                </div>
+                <h2 style="font-size: 22px; font-weight: 700; color: #111; margin-bottom: 24px;">Adicionar Novo Membro</h2>
+                <form class="booking-form" style="width: 100%; max-width: 600px;">
+                    <div class="input-group">
+                        <label>Nome Completo</label>
+                        <input type="text" id="new-member-name" placeholder="Ex: Lucas Martins" style="padding: 14px 18px; border: 1px solid var(--border-color); border-radius: 14px; font-size: 14px;">
+                    </div>
+                    <div class="input-group">
+                        <label>Cargo / Função</label>
+                        <select id="new-member-role">
+                            <option value="Recepcionista">Recepcionista</option>
+                            <option value="Médico(a)">Médico(a)</option>
+                            <option value="Administrador(a)">Administrador(a)</option>
+                        </select>
+                    </div>
+                    <button type="button" id="btn-save-member" class="btn-primary" style="margin-top: 24px;">Salvar Membro</button>
+                </form>
+            </div>
+        </div>
+        <div class="bottom-nav">
+            <button class="nav-btn active" data-target="tab-recepcao" aria-label="Recepção">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                    <rect x="7" y="14" width="2" height="2" fill="currentColor"></rect>
+                    <rect x="11" y="14" width="2" height="2" fill="currentColor"></rect>
+                    <rect x="15" y="14" width="2" height="2" fill="currentColor"></rect>
+                </svg>
+            </button>
+            <button class="nav-btn" data-target="tab-pacientes" aria-label="Pacientes">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+            </button>
+            <button class="nav-btn" data-target="tab-agenda-config" aria-label="Configurar Agenda">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+            </button>
+            <button class="nav-btn" data-target="tab-perfil-admin" aria-label="Perfil Admin">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <script src="js/main.js"></script>
+</body>
+</html>

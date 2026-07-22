@@ -1,6 +1,6 @@
 .card-dashboard {
   flex-direction: column;
-  padding: 30px 20px 100px 20px; /* Reduzido padding-top para deixar o título mais alto */
+  padding: 30px 20px 100px 20px; 
   align-items: center;
   justify-content: flex-start;
   position: relative;
@@ -8,18 +8,17 @@
   max-width: 1100px;
   overflow: hidden;
 }
-
 .tab-content {
   display: none;
   width: 100%;
   flex-direction: column;
   align-items: center;
   flex: 1;
+  min-height: 0; 
   overflow-y: auto;
-  padding: 0px 20px 20px 20px; /* Retirado padding-top interno */
+  padding: 0px 20px 20px 20px; 
   animation: fadeIn 0.25s ease-in-out;
 }
-
 .tab-content::-webkit-scrollbar {
   width: 6px;
 }
@@ -33,28 +32,24 @@
 .tab-content::-webkit-scrollbar-thumb:hover {
   background: #C0C0C0;
 }
-
 .tab-content.active {
   display: flex;
 }
-
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
 .dash-header {
   text-align: center;
   margin-bottom: 20px;
   width: 100%;
   position: sticky;
-  top: 0; /* Colado exatamente no topo zero da tab */
+  top: 0; 
   background-color: white;
   z-index: 10;
   padding-top: 10px;
   padding-bottom: 10px;
 }
-
 .dash-header h1 {
   font-size: 24px;
   font-weight: 700;
@@ -62,13 +57,11 @@
   margin-bottom: 8px;
   letter-spacing: -0.5px;
 }
-
 .dash-header p {
   font-size: 16px;
   color: var(--text-dark);
   line-height: 1.4;
 }
-
 .specialties-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -77,14 +70,13 @@
   max-width: 750px;
   margin: 0 auto;
 }
-
 .specialty-btn {
   background-color: #F0F0F0;
   border: none;
-  border-radius: 12px; /* Quadrados com bordas arredondadas (proporcionais) */
+  border-radius: 12px; 
   padding: 16px 20px;
-  min-height: 90px; /* Reduzido para ficar menor */
-  font-size: 14px; /* Texto um pouco mais delicado */
+  min-height: 90px; 
+  font-size: 14px; 
   font-weight: 500;
   color: #111111;
   font-family: var(--font-geist);
@@ -96,28 +88,37 @@
   align-items: center;
   text-align: center;
 }
-
 .specialty-btn:hover {
   background-color: #E2E2E2;
 }
-
 .specialty-btn:active {
   transform: scale(0.98);
 }
-
+.badge-admin {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: #0056D2;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 10px;
+  text-transform: lowercase;
+  letter-spacing: 0.5px;
+}
 .bottom-nav {
   position: absolute;
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
   background-color: #EBEBEB;
-  border-radius: 30px; /* Fundo arredondado em pílula */
+  border-radius: 30px; 
   display: flex;
   align-items: center;
   padding: 6px;
   gap: 6px;
 }
-
 .nav-btn {
   background: transparent;
   border: none;
@@ -131,31 +132,25 @@
   cursor: pointer;
   transition: all 0.2s;
 }
-
 .nav-btn svg {
   width: 18px;
   height: 18px;
 }
-
 .nav-btn.active {
   background-color: var(--primary);
   color: white;
 }
-
 .nav-btn.active svg {
   fill: currentColor;
 }
-
 .nav-btn.active svg line,
 .nav-btn.active svg polyline {
   stroke: var(--primary);
 }
-
 .nav-btn.active svg rect[width="2"] {
   fill: var(--primary);
   stroke: var(--primary);
 }
-
 .booking-section {
   width: 100%;
   max-width: 500px;
@@ -163,7 +158,6 @@
   flex-direction: column;
   animation: fadeIn 0.3s ease-in-out;
 }
-
 .btn-back {
   background: none;
   border: none;
@@ -180,16 +174,13 @@
   align-self: flex-start;
   transition: opacity 0.2s;
 }
-
 .btn-back:hover {
   opacity: 0.8;
 }
-
 .btn-back svg {
   width: 18px;
   height: 18px;
 }
-
 .booking-title {
   font-size: 22px;
   font-weight: 700;
@@ -197,25 +188,21 @@
   margin-bottom: 24px;
   letter-spacing: -0.5px;
 }
-
 .booking-form {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
-
 .booking-form .input-group {
   display: flex;
   flex-direction: column;
 }
-
 .booking-form label {
   font-size: 13px;
   font-weight: 700;
   color: var(--text-dark);
   margin-bottom: 8px;
 }
-
 .booking-form select {
   width: 100%;
   padding: 14px 18px;
@@ -231,20 +218,17 @@
   background-position: right 18px center;
   cursor: pointer;
 }
-
 .booking-form select:focus {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(82, 212, 104, 0.15);
 }
-
 .history-container {
   width: 100%;
   max-width: 800px;
   display: flex;
   flex-direction: column;
 }
-
 .history-header-row {
   display: flex;
   justify-content: space-between;
@@ -253,14 +237,12 @@
   flex-wrap: wrap;
   gap: 16px;
 }
-
 .history-header-row h3 {
   font-size: 18px;
   font-weight: 600;
   color: #111;
   margin: 0;
 }
-
 .search-box {
   display: flex;
   align-items: center;
@@ -271,14 +253,12 @@
   width: 100%;
   max-width: 280px;
 }
-
 .search-box svg {
   width: 14px;
   height: 14px;
   color: #888;
   margin-right: 8px;
 }
-
 .search-box input {
   border: none;
   outline: none;
@@ -288,13 +268,11 @@
   width: 100%;
   color: #111;
 }
-
 .history-list {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
-
 .history-card {
   border: 1px solid var(--border-color);
   border-radius: 24px;
@@ -302,10 +280,9 @@
   background-color: white;
   display: flex;
   flex-direction: column;
-  gap: 16px; /* Espaçamento vertical padronizado entre todas as linhas */
+  gap: 16px; 
   position: relative;
 }
-
 .history-card-top-right {
   position: absolute;
   top: 24px;
@@ -314,44 +291,37 @@
   font-weight: 600;
   color: #777;
 }
-
 .history-row {
   display: flex;
   align-items: center;
-  gap: 12px; /* Espaçamento horizontal padronizado entre ícone e texto */
+  gap: 12px; 
   font-size: 15px;
   color: #111;
 }
-
 .history-row strong {
   font-weight: 600;
 }
-
 .history-row.space-between {
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 12px; /* Padronizado com o resto */
+  gap: 12px; 
 }
-
 .h-icon {
   width: 18px;
   height: 18px;
   color: #333;
   flex-shrink: 0;
 }
-
 .h-col {
   display: flex;
   align-items: center;
   gap: 12px;
 }
-
 .h-actions {
   display: flex;
   align-items: center;
   gap: 12px;
 }
-
 .status-pill {
   display: flex;
   align-items: center;
@@ -361,31 +331,25 @@
   font-size: 13px;
   font-weight: 500;
 }
-
 .status-pill svg {
   width: 14px;
   height: 14px;
 }
-
 .status-pill.ongoing {
   background-color: #D4F4DF;
   color: #1D6B35;
 }
-
 .status-pill.ongoing svg {
   stroke: #1D6B35;
 }
-
 .status-pill.done {
   background-color: #F0F0F0;
   color: #555;
 }
-
 .status-pill.cancelled {
   background-color: #F0F0F0;
   color: #888;
 }
-
 .btn-cancel-appt {
   background-color: #FFA5A5;
   border: none;
@@ -399,27 +363,22 @@
   transition: background-color 0.2s, transform 0.1s;
   color: #D32F2F;
 }
-
 .btn-cancel-appt:hover {
   background-color: #FF8A8A;
 }
-
 .btn-cancel-appt:active {
   transform: scale(0.95);
 }
-
 .btn-cancel-appt svg {
   width: 14px;
   height: 14px;
 }
-
 .history-month {
   font-size: 16px;
   font-weight: 600;
   color: #111;
   margin: 16px 0 8px 0;
 }
-
 .profile-container {
   width: 100%;
   max-width: 650px;
@@ -427,20 +386,17 @@
   flex-direction: column;
   gap: 32px;
 }
-
 .profile-avatar-section {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
 }
-
 .profile-avatar-section span {
   font-size: 15px;
   font-weight: 600;
   color: #333;
 }
-
 .avatar-circle {
   width: 50px;
   height: 50px;
@@ -455,34 +411,28 @@
   overflow: hidden;
   transition: background-color 0.2s;
 }
-
 .avatar-circle:hover {
   background-color: #F9F9F9;
 }
-
 .avatar-circle img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-
 .avatar-circle svg {
   width: 20px;
   height: 20px;
 }
-
 .profile-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px 40px;
 }
-
 .profile-input-group {
   display: flex;
   flex-direction: column;
   position: relative;
 }
-
 .profile-input-group input,
 .profile-input-group select {
   width: 100%;
@@ -496,12 +446,10 @@
   outline: none;
   background-color: transparent;
 }
-
 .profile-input-group input::placeholder {
   color: #777;
   font-weight: 600;
 }
-
 .profile-input-group select {
   color: #777;
   font-weight: 600;
@@ -511,44 +459,38 @@
   background-position: right 16px center;
   background-size: 10px;
 }
-
 .profile-input-group input:focus,
 .profile-input-group select:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(82, 212, 104, 0.15);
 }
-
 .input-hint {
-  font-size: 13px; /* Aumentado para maior visibilidade */
+  font-size: 13px; 
   color: #555;
   font-weight: 500;
   margin-top: 6px;
   margin-left: 4px;
 }
-
 .profile-checkboxes {
   display: flex;
   flex-direction: column;
   gap: 16px;
   margin-top: 10px;
 }
-
 .custom-checkbox {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 14px; /* Tamanho de texto legível */
+  font-size: 14px; 
   font-weight: 500;
   color: #111;
   cursor: pointer;
 }
-
 .custom-checkbox input {
   display: none;
 }
-
 .checkmark {
-  width: 18px; /* Quadrado um pouco maior */
+  width: 18px; 
   height: 18px;
   border-radius: 4px;
   background-color: #EEE;
@@ -558,12 +500,10 @@
   align-items: center;
   flex-shrink: 0;
 }
-
 .custom-checkbox input:checked + .checkmark {
   background-color: var(--primary);
   border-color: var(--primary);
 }
-
 .custom-checkbox input:checked + .checkmark::after {
   content: "";
   width: 5px;
@@ -573,22 +513,19 @@
   transform: rotate(45deg);
   margin-bottom: 2px;
 }
-
 .profile-action {
   display: flex;
   justify-content: center;
   margin-top: 20px;
 }
-
 .profile-action .btn-primary {
   padding: 14px;
   font-size: 16px;
   font-weight: 600;
   border-radius: 30px;
-  width: 320px; /* Botão tão grande quanto o solicitado */
+  width: 320px; 
   max-width: 100%;
 }
-
 @media (max-width: 768px) {
   .profile-grid {
     grid-template-columns: 1fr;
