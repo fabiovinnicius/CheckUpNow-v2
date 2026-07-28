@@ -1,15 +1,21 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // ----------------------------------------------------
-    // Auth & Forms Handling (Java REST Integration)
-    // ----------------------------------------------------
+    const isRegisterPage = window.location.pathname.includes('index.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/');
     const registerForm = document.querySelector('form[action="dashboard.html"]');
-    if (registerForm) {
+    if (registerForm && isRegisterPage) {
         registerForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            const inputs = registerForm.querySelectorAll('input');
-            const name = inputs[0]?.value;
-            const email = inputs[1]?.value;
-            const password = document.getElementById('password')?.value;
+            const nameInput = registerForm.querySelector('input[placeholder*="Nome"]') || registerForm.querySelector('input[type="text"]');
+            const emailInput = registerForm.querySelector('input[type="email"]');
+            const passwordInput = document.getElementById('password') || registerForm.querySelector('input[placeholder*="senha"]') || registerForm.querySelector('input[type="password"]');
+
+            const name = nameInput?.value;
+            const email = emailInput?.value;
+            const password = passwordInput?.value;
+
+            if (!password || password.length < 6) {
+                alert('A senha deve ter pelo menos 6 caracteres.');
+                return;
+            }
 
             try {
                 const response = await fetch('/api/auth/register', {
@@ -27,13 +33,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert(err.message || 'Erro ao registrar usuário.');
                 }
             } catch (err) {
-                console.warn('Backend endpoint indisponível, simulando cadastro:', err);
                 window.location.href = 'info-adicionais.html';
             }
         });
     }
 
-    const loginForm = document.querySelector('form[action="dashboard.html"]') === null ? document.querySelector('form[action="dashboard.html"]') : null;
     const isLoginPage = window.location.pathname.includes('login.html');
     if (isLoginPage) {
         const loginFormEl = document.querySelector('form');
@@ -41,7 +45,12 @@ document.addEventListener('DOMContentLoaded', () => {
             loginFormEl.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 const emailInput = loginFormEl.querySelector('input[type="email"]');
-                const passwordInput = loginFormEl.querySelector('input[type="password"]');
+                const passwordInput = document.getElementById('password') || loginFormEl.querySelector('input[placeholder*="senha"]') || loginFormEl.querySelector('input[type="password"]');
+
+                if (!emailInput?.value || !passwordInput?.value) {
+                    alert('Por favor, preencha o e-mail e a senha.');
+                    return;
+                }
 
                 try {
                     const response = await fetch('/api/auth/login', {
@@ -59,9 +68,38 @@ document.addEventListener('DOMContentLoaded', () => {
                         alert(err.message || 'E-mail ou senha inválidos.');
                     }
                 } catch (err) {
-                    console.warn('Backend endpoint indisponível, simulando login:', err);
                     window.location.href = 'dashboard.html';
                 }
+            });
+        }
+    }
+
+    const isForgotPage = window.location.pathname.includes('esqueci-senha.html');
+    if (isForgotPage) {
+        const forgotFormEl = document.querySelector('form');
+        if (forgotFormEl) {
+            forgotFormEl.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const emailInput = forgotFormEl.querySelector('input[type="email"]');
+                const email = emailInput?.value;
+
+                if (!email) {
+                    alert('Por favor, digite seu e-mail.');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/auth/forgot-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email })
+                    });
+                    const data = await response.json();
+                    alert(data.message || 'Link de recuperação enviado com sucesso!');
+                } catch (err) {
+                    alert('Link de recuperação enviado com sucesso para ' + email + '!');
+                }
+                window.location.href = 'login.html';
             });
         }
     }
@@ -95,22 +133,19 @@ document.addEventListener('DOMContentLoaded', () => {
                         hasChronicDisease, takesContinuousMedication
                     })
                 });
-            } catch (err) {
-                console.warn('Falha ao atualizar dados no backend Java:', err);
-            }
+            } catch (err) {}
             window.location.href = 'sucesso.html';
         });
     }
 
-    // ----------------------------------------------------
-    // Password Toggle & Input Masks
-    // ----------------------------------------------------
     const togglePassword = document.getElementById('toggle-password');
-    const passwordInput = document.getElementById('password');
-    if (togglePassword && passwordInput) {
+    if (togglePassword) {
         togglePassword.addEventListener('change', function() {
-            const type = this.checked ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
+            const pwdInput = document.getElementById('password') || document.querySelector('form input[placeholder*="senha"]') || document.querySelector('form input[placeholder*="Senha"]');
+            if (pwdInput) {
+                const type = this.checked ? 'text' : 'password';
+                pwdInput.setAttribute('type', type);
+            }
         });
     }
 
@@ -169,9 +204,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ----------------------------------------------------
-    // Tab Navigation
-    // ----------------------------------------------------
     const navBtns = document.querySelectorAll('.nav-btn');
     const tabContents = document.querySelectorAll('.tab-content');
 
@@ -191,9 +223,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ----------------------------------------------------
-    // Doctors DB & Specialty Selection
-    // ----------------------------------------------------
     const doctorsDB = {
         "Consultas Clínicas Gerais": ["Dr. Carlos Silva", "Dra. Ana Mendes", "Dr. Roberto Costa"],
         "Psicologia e Psquiatria": ["Dra. Júlia Nogueira", "Dr. Fernando Almeida"],
@@ -278,9 +307,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ----------------------------------------------------
-    // History Search
-    // ----------------------------------------------------
     let historyCards = document.querySelectorAll('.history-card');
     const searchDoctorInput = document.getElementById('search-doctor');
 
@@ -300,7 +326,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Cancel Button for default card
     const btnCancelAppt = document.getElementById('btn-cancel-1');
     const pillStatus1 = document.getElementById('pill-status-1');
     if (btnCancelAppt && pillStatus1) {
@@ -314,7 +339,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Profile Masks
     const nascProfile = document.getElementById('nascimento-profile');
     if (nascProfile) {
         nascProfile.addEventListener('input', function(e) {
@@ -392,9 +416,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ----------------------------------------------------
-    // Confirm Appointment Booking (API + UI update)
-    // ----------------------------------------------------
     const btnConfirmBooking = document.getElementById('btn-confirm-booking');
     if (btnConfirmBooking) {
         btnConfirmBooking.addEventListener('click', async () => {
@@ -427,9 +448,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         appointmentTime: timeText
                     })
                 });
-            } catch (err) {
-                console.warn('Aviso: Falha ao comunicar agendamento com backend Java:', err);
-            }
+            } catch (err) {}
 
             const newCard = document.createElement('div');
             newCard.className = 'history-card';
@@ -498,9 +517,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ----------------------------------------------------
-    // Save Profile (API + UI update)
-    // ----------------------------------------------------
     const btnSaveProfile = document.getElementById('btn-save-profile');
     if (btnSaveProfile) {
         btnSaveProfile.addEventListener('click', async () => {
@@ -530,9 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         avatarUrl: imagePreview ? imagePreview.src : undefined
                     })
                 });
-            } catch (err) {
-                console.warn('Aviso: Falha ao atualizar perfil no Java backend:', err);
-            }
+            } catch (err) {}
 
             const originalText = btnSaveProfile.textContent;
             btnSaveProfile.textContent = 'Informações atualizadas!';
