@@ -26,11 +26,10 @@ public class AppointmentController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getUserAppointments(HttpSession session, @RequestParam(value = "userId", required = false) Long paramUserId) {
+    public ResponseEntity<?> getUserAppointments(HttpSession session) {
+        // O userId vem exclusivamente da sessão - nunca de um parâmetro da URL,
+        // senão qualquer pessoa poderia ver a agenda de outro usuário.
         Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
-            userId = paramUserId;
-        }
 
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Usuário não autenticado."));
@@ -42,26 +41,13 @@ public class AppointmentController {
 
     @PostMapping
     public ResponseEntity<?> createAppointment(@RequestBody Map<String, Object> payload, HttpSession session) {
+        // O usuário do agendamento vem exclusivamente da sessão autenticada.
+        // Nunca aceitar um "userId" vindo do corpo da requisição aqui, pois
+        // isso permitiria que qualquer pessoa marcasse consulta em nome de outra.
         Long userId = (Long) session.getAttribute("userId");
-        if (userId == null && payload.containsKey("userId")) {
-            Object rawId = payload.get("userId");
-            if (rawId instanceof Number) {
-                userId = ((Number) rawId).longValue();
-            } else if (rawId instanceof String) {
-                try {
-                    userId = Long.parseLong((String) rawId);
-                } catch (NumberFormatException ignored) {}
-            }
-        }
 
         if (userId == null) {
-            // Fallback to first user in system if available, or create temporary guest
-            Optional<User> firstUser = userRepository.findAll().stream().findFirst();
-            if (firstUser.isPresent()) {
-                userId = firstUser.get().getId();
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Usuário não identificado para agendamento."));
-            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Usuário não autenticado."));
         }
 
         Optional<User> userOpt = userRepository.findById(userId);
@@ -86,11 +72,26 @@ public class AppointmentController {
     }
 
     @PutMapping("/{id}/cancel")
-    public ResponseEntity<?> cancelAppointment(@PathVariable Long id) {
-        return appointmentRepository.findById(id).map(appointment -> {
-            appointment.setStatus("CANCELADO");
-            Appointment updated = appointmentRepository.save(appointment);
-            return ResponseEntity.ok(updated);
-        }).orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> cancelAppointment(@PathVariable Long id, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Usuário não autenticado."));
+        }
+
+        Optional<Appointment> appointmentOpt = appointmentRepository.findById(id);
+        if (appointmentOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Appointment appointment = appointmentOpt.get();
+
+        // Só o dono da consulta pode cancelá-la.
+        if (!appointment.getUser().getId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Você não tem permissão para cancelar esta consulta."));
+        }
+
+        appointment.setStatus("CANCELADO");
+        Appointment updated = appointmentRepository.save(appointment);
+        return ResponseEntity.ok(updated);
     }
 }

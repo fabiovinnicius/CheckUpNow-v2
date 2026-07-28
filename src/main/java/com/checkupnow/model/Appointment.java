@@ -28,7 +28,7 @@ public class Appointment {
     private String appointmentTime;
 
     @Column(nullable = false)
-    private String status; // AGENDADO, CONCLUIDO, CANCELADO
+    private String status;
 
     private String observation;
     private LocalDateTime createdAt;

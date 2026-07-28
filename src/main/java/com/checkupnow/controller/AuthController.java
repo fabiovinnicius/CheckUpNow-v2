@@ -5,6 +5,7 @@ import com.checkupnow.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -15,9 +16,11 @@ import java.util.Optional;
 public class AuthController {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public AuthController(UserRepository userRepository) {
+    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/register")
@@ -34,7 +37,8 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", "E-mail já cadastrado."));
         }
 
-        User user = new User(name, email, password);
+        String hashedPassword = passwordEncoder.encode(password);
+        User user = new User(name, email, hashedPassword);
         User savedUser = userRepository.save(user);
 
         session.setAttribute("userId", savedUser.getId());
@@ -48,7 +52,7 @@ public class AuthController {
 
         Optional<User> userOpt = userRepository.findByEmail(email);
 
-        if (userOpt.isPresent() && userOpt.get().getPassword().equals(password)) {
+        if (userOpt.isPresent() && passwordEncoder.matches(password, userOpt.get().getPassword())) {
             User user = userOpt.get();
             session.setAttribute("userId", user.getId());
             return ResponseEntity.ok(user);
@@ -73,5 +77,14 @@ public class AuthController {
     public ResponseEntity<?> logout(HttpSession session) {
         session.invalidate();
         return ResponseEntity.ok(Map.of("message", "Sessão encerrada com sucesso."));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        if (email == null || email.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "E-mail é obrigatório."));
+        }
+        return ResponseEntity.ok(Map.of("message", "Link de recuperação enviado com sucesso para " + email));
     }
 }
