@@ -590,12 +590,10 @@
   flex-direction: column;
   padding: 16px;
   gap: 12px;
-  border-left: 4px solid #0056D2;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .doctor-patient-card.ongoing-card {
-  border-left-color: #52D468;
   background: #F9FFF9;
 }
 
