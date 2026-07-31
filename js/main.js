@@ -940,10 +940,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (nameEl) nameEl.textContent = pData.name;
         if (detailsEl) detailsEl.textContent = `${pData.age} • ${pData.gender} • CPF: ${pData.cpf} • ${pData.plan}`;
-        if (avatarEl) {
-            avatarEl.textContent = pData.initials;
-            avatarEl.style.background = pData.avatarBg;
-        }
         if (chronicEl) chronicEl.textContent = pData.chronic;
         if (medsEl) medsEl.textContent = pData.meds;
         if (allergiesEl) {
