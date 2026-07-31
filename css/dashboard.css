@@ -20,17 +20,23 @@
   animation: fadeIn 0.25s ease-in-out;
 }
 .tab-content::-webkit-scrollbar {
-  width: 6px;
+  width: 5px;
+  height: 5px;
 }
 .tab-content::-webkit-scrollbar-track {
   background: transparent;
 }
 .tab-content::-webkit-scrollbar-thumb {
-  background: #E0E0E0;
+  background: #CCCCCC;
   border-radius: 10px;
 }
 .tab-content::-webkit-scrollbar-thumb:hover {
-  background: #C0C0C0;
+  background: #B0B0B0;
+}
+.tab-content::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
 }
 .tab-content.active {
   display: flex;
