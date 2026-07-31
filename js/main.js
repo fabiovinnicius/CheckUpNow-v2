@@ -844,4 +844,301 @@ document.addEventListener('DOMContentLoaded', () => {
             renderTeam();
         });
     }
+
+    // ----------------------------------------------------
+    // DOCTOR PORTAL & DASHBOARD LOGIC
+    // ----------------------------------------------------
+    const doctorLoginForm = document.getElementById('doctor-login-form');
+    if (doctorLoginForm) {
+        doctorLoginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const doctorEmail = document.getElementById('doctor-email')?.value || 'roberto.costa@checkupnow.com';
+            localStorage.setItem('checkupDoctor', JSON.stringify({
+                name: 'Dr. Roberto Costa',
+                crm: '12345/SP',
+                specialty: 'Cardiologia',
+                email: doctorEmail
+            }));
+            window.location.href = 'doctor-dashboard.html';
+        });
+    }
+
+    // Doctor Queue Filters
+    const doctorFilterChips = document.querySelectorAll('.doctor-filter-tabs .filter-chip');
+    const doctorPatientCards = document.querySelectorAll('.doctor-patient-card');
+    if (doctorFilterChips.length > 0) {
+        doctorFilterChips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                doctorFilterChips.forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                const filter = chip.getAttribute('data-filter');
+
+                doctorPatientCards.forEach(card => {
+                    const status = card.getAttribute('data-status');
+                    if (filter === 'all') {
+                        card.style.display = 'flex';
+                    } else if (filter === 'waiting' && (status === 'waiting' || status === 'ongoing')) {
+                        card.style.display = 'flex';
+                    } else if (filter === 'done' && status === 'done') {
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+    }
+
+    // Patient Call Action
+    document.querySelectorAll('.btn-call-patient').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const card = this.closest('.doctor-patient-card');
+            const patientName = card.querySelector('.doc-patient-name')?.textContent || 'Paciente';
+            const statusPill = card.querySelector('.pill-patient-status');
+            
+            if (statusPill) {
+                statusPill.className = 'status-pill ongoing';
+                statusPill.style.background = '#FFF3CD';
+                statusPill.style.color = '#856404';
+                statusPill.innerHTML = '<span class="dot" style="background: #856404;"></span> Chamado no Painel';
+            }
+            alert(`Sinal emitido: Paciente ${patientName} foi chamado no painel da recepção!`);
+        });
+    });
+
+    // Start / Continue Consultation
+    const patientsMock = {
+        '1': { name: 'Maria Clara Silva', age: '34 anos', gender: 'Feminino', cpf: '123.456.789-00', plan: 'Unimed', chronic: 'Hipertensão Arterial', meds: 'Losartana 50mg', allergies: 'Nenhuma relatada', avatarBg: '#0056D2', initials: 'MC' },
+        '2': { name: 'João Pedro Lima', age: '45 anos', gender: 'Masculino', cpf: '987.654.321-11', plan: 'Bradesco Saúde', chronic: 'Nenhuma', meds: 'Nenhum', allergies: 'Alergia a Penicilina', avatarBg: '#1D6B35', initials: 'JP' },
+        '3': { name: 'Ana Beatriz Costa', age: '29 anos', gender: 'Feminino', cpf: '456.789.123-22', plan: 'Particular', chronic: 'Asma', meds: 'Salbutamol aerossol', allergies: 'Dipirona', avatarBg: '#666', initials: 'AB' },
+        '4': { name: 'Carlos Eduardo Rocha', age: '52 anos', gender: 'Masculino', cpf: '321.654.987-33', plan: 'SulAmérica', chronic: 'Diabetes Tipo 2', meds: 'Metformina 850mg', allergies: 'Nenhuma relatada', avatarBg: '#0056D2', initials: 'CE' }
+    };
+
+    let currentConsultationPatientId = null;
+
+    document.querySelectorAll('.btn-start-consultation').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const card = this.closest('.doctor-patient-card');
+            const patientId = card ? card.getAttribute('data-patient-id') : '1';
+            openConsultationTab(patientId, card);
+        });
+    });
+
+    function openConsultationTab(patientId, cardElement) {
+        currentConsultationPatientId = patientId;
+        const pData = patientsMock[patientId] || patientsMock['1'];
+
+        // Populate consultation tab info
+        const nameEl = document.getElementById('consult-patient-name');
+        const detailsEl = document.getElementById('consult-patient-details');
+        const avatarEl = document.getElementById('consult-patient-avatar');
+        const chronicEl = document.getElementById('consult-chronic-diseases');
+        const medsEl = document.getElementById('consult-meds');
+        const allergiesEl = document.getElementById('consult-allergies');
+
+        if (nameEl) nameEl.textContent = pData.name;
+        if (detailsEl) detailsEl.textContent = `${pData.age} • ${pData.gender} • CPF: ${pData.cpf} • ${pData.plan}`;
+        if (avatarEl) {
+            avatarEl.textContent = pData.initials;
+            avatarEl.style.background = pData.avatarBg;
+        }
+        if (chronicEl) chronicEl.textContent = pData.chronic;
+        if (medsEl) medsEl.textContent = pData.meds;
+        if (allergiesEl) {
+            allergiesEl.textContent = pData.allergies;
+            if (pData.allergies.toLowerCase().includes('nenhuma')) {
+                allergiesEl.className = 'doc-fact-val';
+            } else {
+                allergiesEl.className = 'doc-fact-val alert-text';
+            }
+        }
+
+        // Update card status in queue
+        if (cardElement) {
+            cardElement.setAttribute('data-status', 'ongoing');
+            cardElement.classList.add('ongoing-card');
+            const statusPill = cardElement.querySelector('.pill-patient-status');
+            if (statusPill) {
+                statusPill.className = 'status-pill ongoing';
+                statusPill.style.background = '#E6F4EA';
+                statusPill.style.color = '#1D6B35';
+                statusPill.innerHTML = '<span class="dot" style="background: #1D6B35;"></span> Em Atendimento';
+            }
+        }
+
+        // Switch to Consultation Tab
+        const consultationTabBtn = document.querySelector('.bottom-nav .nav-btn[data-target="tab-doctor-consultation"]');
+        if (consultationTabBtn) {
+            consultationTabBtn.click();
+        }
+    }
+
+    // Back to Queue Button
+    const btnBackToQueue = document.getElementById('btn-back-to-queue');
+    if (btnBackToQueue) {
+        btnBackToQueue.addEventListener('click', () => {
+            const agendaTabBtn = document.querySelector('.bottom-nav .nav-btn[data-target="tab-doctor-agenda"]');
+            if (agendaTabBtn) agendaTabBtn.click();
+        });
+    }
+
+    // Dynamic Prescription Items
+    const btnAddPrescItem = document.getElementById('btn-add-prescription-item');
+    const prescContainer = document.getElementById('prescription-items-container');
+
+    if (btnAddPrescItem && prescContainer) {
+        btnAddPrescItem.addEventListener('click', () => {
+            const row = document.createElement('div');
+            row.className = 'prescription-row';
+            row.innerHTML = `
+                <input type="text" class="presc-med-name" placeholder="Nome do medicamento" style="flex: 2;">
+                <input type="text" class="presc-posology" placeholder="Posologia / Instruções" style="flex: 3;">
+                <button type="button" class="btn-remove-presc" title="Remover item">&times;</button>
+            `;
+            row.querySelector('.btn-remove-presc').addEventListener('click', () => row.remove());
+            prescContainer.appendChild(row);
+        });
+
+        // Delegate removal for default rows
+        prescContainer.querySelectorAll('.btn-remove-presc').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.closest('.prescription-row').remove();
+            });
+        });
+    }
+
+    // Print Recipe Modal
+    const btnPrintRecipe = document.getElementById('btn-print-recipe');
+    const recipeModal = document.getElementById('recipe-print-modal');
+
+    if (btnPrintRecipe && recipeModal) {
+        btnPrintRecipe.addEventListener('click', () => {
+            const pName = document.getElementById('consult-patient-name')?.textContent || 'Maria Clara Silva';
+            const modalPName = document.getElementById('modal-patient-name');
+            const modalMedsList = document.getElementById('modal-medicines-list');
+            const modalDate = document.getElementById('modal-print-date');
+
+            if (modalPName) modalPName.textContent = pName;
+            if (modalDate) {
+                const today = new Date();
+                modalDate.textContent = `Data: ${today.toLocaleDateString('pt-BR')}`;
+            }
+
+            if (modalMedsList) {
+                modalMedsList.innerHTML = '';
+                const rows = document.querySelectorAll('.prescription-row');
+                let count = 0;
+                rows.forEach(row => {
+                    const medName = row.querySelector('.presc-med-name')?.value.trim();
+                    const posology = row.querySelector('.presc-posology')?.value.trim();
+                    if (medName) {
+                        count++;
+                        const li = document.createElement('li');
+                        li.style.marginBottom = '12px';
+                        li.innerHTML = `<strong>${medName}</strong><br><span style="color: #555; font-size: 13px;">${posology || 'Conforme orientação médica.'}</span>`;
+                        modalMedsList.appendChild(li);
+                    }
+                });
+
+                if (count === 0) {
+                    modalMedsList.innerHTML = '<li><strong>Consulta / Atestado Médico</strong><br><span style="color: #555; font-size: 13px;">Paciente esteve em consulta médica no dia de hoje.</span></li>';
+                }
+            }
+
+            recipeModal.style.display = 'flex';
+        });
+    }
+
+    // Finish Consultation
+    const btnFinishConsultation = document.getElementById('btn-finish-consultation');
+    if (btnFinishConsultation) {
+        btnFinishConsultation.addEventListener('click', () => {
+            if (confirm('Deseja finalizar o atendimento e salvar o prontuário deste paciente?')) {
+                if (currentConsultationPatientId) {
+                    const card = document.querySelector(`.doctor-patient-card[data-patient-id="${currentConsultationPatientId}"]`);
+                    if (card) {
+                        card.setAttribute('data-status', 'done');
+                        card.classList.remove('ongoing-card');
+                        const actionRow = card.querySelector('.doc-action-row');
+                        if (actionRow) {
+                            actionRow.innerHTML = `
+                                <span class="status-pill done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Concluído</span>
+                                <div class="doc-btn-group">
+                                    <button class="btn-doctor-sec btn-start-consultation" style="font-size: 12px;">Ver Resumo</button>
+                                </div>
+                            `;
+                            actionRow.querySelector('.btn-start-consultation')?.addEventListener('click', function(e) {
+                                e.stopPropagation();
+                                openConsultationTab(currentConsultationPatientId, card);
+                            });
+                        }
+                    }
+                }
+
+                // Update Metrics Counts
+                updateDoctorMetrics();
+
+                alert('Atendimento concluído com sucesso! O prontuário foi arquivado.');
+                
+                const agendaTabBtn = document.querySelector('.bottom-nav .nav-btn[data-target="tab-doctor-agenda"]');
+                if (agendaTabBtn) agendaTabBtn.click();
+            }
+        });
+    }
+
+    function updateDoctorMetrics() {
+        const totalCards = document.querySelectorAll('.doctor-patient-card');
+        let doneCount = 0;
+        let waitingCount = 0;
+        let ongoingCount = 0;
+
+        totalCards.forEach(c => {
+            const st = c.getAttribute('data-status');
+            if (st === 'done') doneCount++;
+            else if (st === 'ongoing') ongoingCount++;
+            else waitingCount++;
+        });
+
+        const totalEl = document.getElementById('metric-total-count');
+        const waitEl = document.getElementById('metric-waiting-count');
+        const ongoingEl = document.getElementById('metric-ongoing-count');
+        const doneEl = document.getElementById('metric-done-count');
+
+        if (totalEl) totalEl.textContent = totalCards.length;
+        if (waitEl) waitEl.textContent = waitingCount;
+        if (ongoingEl) ongoingEl.textContent = ongoingCount;
+        if (doneEl) doneEl.textContent = doneCount;
+    }
+
+    // Search in Doctor Patients Tab
+    const searchDocPatientInput = document.getElementById('search-doctor-patient-input');
+    if (searchDocPatientInput) {
+        searchDocPatientInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('.doc-patient-history-card');
+            cards.forEach(card => {
+                if (card.textContent.toLowerCase().includes(query)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    }
+
+    // Doctor Profile Save
+    const btnSaveDoctorProfile = document.getElementById('btn-save-doctor-profile');
+    if (btnSaveDoctorProfile) {
+        btnSaveDoctorProfile.addEventListener('click', () => {
+            const originalText = btnSaveDoctorProfile.textContent;
+            btnSaveDoctorProfile.textContent = 'Perfil Atualizado!';
+            btnSaveDoctorProfile.style.backgroundColor = '#1D6B35';
+            setTimeout(() => {
+                btnSaveDoctorProfile.textContent = originalText;
+                btnSaveDoctorProfile.style.backgroundColor = '#0056D2';
+            }, 2500);
+        });
+    }
 });

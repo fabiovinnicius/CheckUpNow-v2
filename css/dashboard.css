@@ -540,3 +540,368 @@
     bottom: 20px;
   }
 }
+
+/* ----------------------------------------------------
+ * ESTILOS VISÃO DO MÉDICO (DOCTOR DASHBOARD)
+ * ---------------------------------------------------- */
+.badge-doctor-header {
+  background-color: #E6F0FF;
+  color: #0056D2;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 12px;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+.doctor-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  width: 100%;
+}
+
+.doctor-filter-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.filter-chip {
+  background: #F0F0F0;
+  border: 1px solid transparent;
+  color: #666;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-chip.active {
+  background: #0056D2;
+  color: white;
+  border-color: #0056D2;
+}
+
+.doctor-patient-card {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  gap: 12px;
+  border-left: 4px solid #0056D2;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.doctor-patient-card.ongoing-card {
+  border-left-color: #52D468;
+  background: #F9FFF9;
+}
+
+.doc-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.doc-patient-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.doc-patient-name {
+  font-size: 15px;
+  color: #111;
+  font-weight: 700;
+  display: block;
+}
+
+.doc-appt-type {
+  font-size: 12px;
+  color: #666;
+  display: block;
+}
+
+.doc-time-badge {
+  background: #E6F0FF;
+  color: #0056D2;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+
+.doc-time-badge.ongoing-badge {
+  background: #E6F4EA;
+  color: #1D6B35;
+}
+
+.doc-info-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.info-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #F0F4F8;
+  color: #445566;
+}
+
+.info-tag svg {
+  width: 12px;
+  height: 12px;
+}
+
+.info-tag.alert-tag {
+  background: #FFEBEB;
+  color: #D32F2F;
+}
+
+.doc-action-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.doc-btn-group {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-doctor-pri {
+  background: #0056D2;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: opacity 0.2s;
+}
+
+.btn-doctor-pri:hover {
+  opacity: 0.9;
+}
+
+.btn-doctor-sec {
+  background: #E6F0FF;
+  color: #0056D2;
+  border: 1px solid #CCE0FF;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s;
+}
+
+.btn-doctor-sec:hover {
+  background: #D9E8FF;
+}
+
+/* Consultation View Layout */
+.doc-consult-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #FAFAFA;
+  border: 1px solid var(--border-color);
+  padding: 12px 16px;
+  border-radius: 14px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.doc-consult-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 850px) {
+  .doc-consult-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.doc-box {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+
+.doc-box-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111;
+  margin: 0 0 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.doc-box-title svg {
+  width: 16px;
+  height: 16px;
+  color: #0056D2;
+}
+
+.doc-fact-item {
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.doc-fact-label {
+  color: #666;
+  font-weight: 600;
+  display: block;
+}
+
+.doc-fact-val {
+  color: #111;
+  font-weight: 500;
+}
+
+.doc-fact-val.alert-text {
+  color: #D32F2F;
+  font-weight: 600;
+}
+
+.vitals-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.vital-item {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 8px;
+  text-align: center;
+}
+
+.vital-label {
+  font-size: 10px;
+  color: #64748B;
+  font-weight: 700;
+  text-transform: uppercase;
+  display: block;
+}
+
+.vital-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+/* Prescription items */
+.prescription-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.prescription-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.prescription-row input {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+  outline: none;
+}
+
+.btn-remove-presc {
+  background: #FFEBEB;
+  color: #D32F2F;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Modal Printable Recipe */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px;
+}
+
+.modal-content.recipe-paper {
+  background: white;
+  width: 100%;
+  max-width: 550px;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.recipe-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .modal-backdrop, .recipe-paper, .recipe-paper * {
+    visibility: visible;
+  }
+  .modal-backdrop {
+    position: absolute;
+    left: 0;
+    top: 0;
+    background: white;
+    width: 100%;
+    height: 100%;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
+

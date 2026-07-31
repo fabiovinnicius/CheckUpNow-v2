@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CheckUp Now! - Painel do Médico</title>
+    <link rel="icon" href="data:image/svg+xml;charset=utf-8,%3Csvg width='100' height='100' viewBox='0 0 100 100' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='35' y='0' width='30' height='100' rx='10' fill='%2352D468'/%3E%3Crect x='0' y='35' width='100' height='30' rx='10' fill='%2352D468'/%3E%3Cpath d='M25 55 L40 70 L85 30' stroke='white' stroke-width='12' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" type="image/svg+xml">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/style.css">
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <div class="bg-wave bg-wave-tl"></div>
+    <div class="bg-wave bg-wave-br"></div>
+
+    <div class="card card-dashboard">
+
+        <!-- TAB 1: AGENDA & FILA DO DIA -->
+        <div id="tab-doctor-agenda" class="tab-content active" style="overflow-y: hidden;">
+            <div id="doctor-agenda-main" style="width: 100%; display: flex; flex-direction: column; height: 100%;">
+                
+                <div class="dash-header" style="text-align: center; display: flex; flex-direction: column; align-items: center; margin-bottom: 12px; padding-top: 0; padding-bottom: 4px; flex-shrink: 0;">
+                    <span class="badge-doctor-header">Consultório Digital • Sala 02</span>
+                    <h1 style="font-size: 22px; margin-bottom: 2px;">Atendimentos de Hoje</h1>
+                    <p style="font-size: 13px; margin-bottom: 0;">Dr. Roberto Costa (CRM 12345/SP - Cardiologia)</p>
+                </div>
+
+                <!-- Metrics Grid -->
+                <div class="doctor-metrics-grid" style="margin-bottom: 16px; flex-shrink: 0;">
+                    <div class="metric-card">
+                        <h3 id="metric-total-count" style="color: #0056D2;">8</h3>
+                        <p>Total Hoje</p>
+                    </div>
+                    <div class="metric-card">
+                        <h3 id="metric-waiting-count" style="color: #FFB020;">3</h3>
+                        <p>Aguardando</p>
+                    </div>
+                    <div class="metric-card">
+                        <h3 id="metric-ongoing-count" style="color: #52D468;">1</h3>
+                        <p>Em Atendimento</p>
+                    </div>
+                    <div class="metric-card">
+                        <h3 id="metric-done-count" style="color: #1D6B35;">4</h3>
+                        <p>Concluídos</p>
+                    </div>
+                </div>
+
+                <!-- Controls & Filters -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-shrink: 0; gap: 8px; flex-wrap: wrap;">
+                    <h3 class="section-title" style="margin: 0; font-size: 15px;">Fila de Chamada</h3>
+                    <div class="doctor-filter-tabs">
+                        <button class="filter-chip active" data-filter="all">Todos</button>
+                        <button class="filter-chip" data-filter="waiting">Aguardando</button>
+                        <button class="filter-chip" data-filter="done">Atendidos</button>
+                    </div>
+                </div>
+
+                <!-- Patient Queue List -->
+                <div class="history-list doctor-queue-list" id="doctor-queue-container" style="flex: 1; overflow-y: auto; padding-right: 4px; margin-bottom: 24px;">
+                    
+                    <!-- Card Paciente 1 -->
+                    <div class="history-card doctor-patient-card" data-status="waiting" data-patient-id="1">
+                        <div class="doc-card-header">
+                            <div class="doc-patient-info">
+                                <div class="avatar-initials" style="background: #0056D2; color: white;">MC</div>
+                                <div>
+                                    <strong class="doc-patient-name">Maria Clara Silva</strong>
+                                    <span class="doc-appt-type">Consulta Clínico Geral • Retorno</span>
+                                </div>
+                            </div>
+                            <span class="doc-time-badge">09:00</span>
+                        </div>
+                        
+                        <div class="doc-card-body">
+                            <div class="doc-info-chips">
+                                <span class="info-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg> Hipertensão</span>
+                                <span class="info-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Chegou há 10 min</span>
+                            </div>
+                            
+                            <div class="doc-action-row">
+                                <span class="status-pill ongoing pill-patient-status"><span class="dot"></span> Aguardando na Recepção</span>
+                                <div class="doc-btn-group">
+                                    <button class="btn-doctor-sec btn-call-patient" title="Enviar sinal de chamada para a recepção/painel">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                                        Chamar
+                                    </button>
+                                    <button class="btn-doctor-pri btn-start-consultation">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                                        Atender
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card Paciente 2 -->
+                    <div class="history-card doctor-patient-card ongoing-card" data-status="ongoing" data-patient-id="2">
+                        <div class="doc-card-header">
+                            <div class="doc-patient-info">
+                                <div class="avatar-initials" style="background: #1D6B35; color: white;">JP</div>
+                                <div>
+                                    <strong class="doc-patient-name">João Pedro Lima</strong>
+                                    <span class="doc-appt-type">Cardiologia • Avaliação Eletrocardiograma</span>
+                                </div>
+                            </div>
+                            <span class="doc-time-badge ongoing-badge">09:30</span>
+                        </div>
+                        
+                        <div class="doc-card-body">
+                            <div class="doc-info-chips">
+                                <span class="info-tag alert-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path></svg> Alergia a Penicilina</span>
+                                <span class="info-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect></svg> Bradesco Saúde</span>
+                            </div>
+                            
+                            <div class="doc-action-row">
+                                <span class="status-pill ongoing" style="background: #E6F4EA; color: #1D6B35;"><span class="dot" style="background: #1D6B35;"></span> Em Atendimento</span>
+                                <div class="doc-btn-group">
+                                    <button class="btn-doctor-pri btn-start-consultation" style="background: #1D6B35;">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                        Continuar Prontuário
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card Paciente 3 -->
+                    <div class="history-card doctor-patient-card" data-status="done" data-patient-id="3">
+                        <div class="doc-card-header">
+                            <div class="doc-patient-info">
+                                <div class="avatar-initials" style="background: #666; color: white;">AB</div>
+                                <div>
+                                    <strong class="doc-patient-name">Ana Beatriz Costa</strong>
+                                    <span class="doc-appt-type">Checkup Geral • Rotina</span>
+                                </div>
+                            </div>
+                            <span class="doc-time-badge" style="background: #F0F0F0; color: #666;">08:30</span>
+                        </div>
+                        
+                        <div class="doc-card-body">
+                            <div class="doc-action-row">
+                                <span class="status-pill done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Concluído</span>
+                                <div class="doc-btn-group">
+                                    <button class="btn-doctor-sec btn-start-consultation" style="font-size: 12px;">Ver Resumo</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card Paciente 4 -->
+                    <div class="history-card doctor-patient-card" data-status="waiting" data-patient-id="4">
+                        <div class="doc-card-header">
+                            <div class="doc-patient-info">
+                                <div class="avatar-initials" style="background: #0056D2; color: white;">CE</div>
+                                <div>
+                                    <strong class="doc-patient-name">Carlos Eduardo Rocha</strong>
+                                    <span class="doc-appt-type">Primeira Consulta • Acompanhamento</span>
+                                </div>
+                            </div>
+                            <span class="doc-time-badge">10:30</span>
+                        </div>
+                        
+                        <div class="doc-card-body">
+                            <div class="doc-action-row">
+                                <span class="status-pill ongoing pill-patient-status"><span class="dot"></span> Horário Agendado</span>
+                                <div class="doc-btn-group">
+                                    <button class="btn-doctor-sec btn-call-patient">Chamar</button>
+                                    <button class="btn-doctor-pri btn-start-consultation">Atender</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- TAB 2: PRONTUÁRIO & ATENDIMENTO CLÍNICO -->
+        <div id="tab-doctor-consultation" class="tab-content" style="overflow-y: hidden;">
+            <div id="doctor-consultation-container" style="width: 100%; display: flex; flex-direction: column; height: 100%;">
+                
+                <!-- Patient Banner -->
+                <div class="doc-consult-banner">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <button type="button" id="btn-back-to-queue" class="btn-back" style="margin: 0; padding: 6px 12px; font-size: 13px;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                            Voltar
+                        </button>
+                        <div class="avatar-initials" id="consult-patient-avatar" style="background: #0056D2; color: white; width: 44px; height: 44px; font-size: 16px;">MC</div>
+                        <div>
+                            <h2 id="consult-patient-name" style="font-size: 17px; font-weight: 700; color: #111; margin: 0;">Maria Clara Silva</h2>
+                            <p id="consult-patient-details" style="font-size: 12px; color: #666; margin: 2px 0 0 0;">34 anos • Feminino • CPF: 123.456.789-00 • Unimed</p>
+                        </div>
+                    </div>
+                    <span class="status-pill ongoing" id="consult-status-badge" style="font-size: 11px; padding: 4px 10px;"><span class="dot"></span> Em Atendimento</span>
+                </div>
+
+                <!-- Consultation Two-Column Layout -->
+                <div class="doc-consult-layout" style="flex: 1; overflow-y: auto; padding-right: 4px; margin-bottom: 20px;">
+                    
+                    <!-- Left Column: Patient Antecedents & Quick Notes -->
+                    <div class="doc-consult-col-left">
+                        <div class="doc-box">
+                            <h4 class="doc-box-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+                                Histórico do Paciente
+                            </h4>
+                            <div class="doc-box-content">
+                                <div class="doc-fact-item">
+                                    <span class="doc-fact-label">Doenças Crônicas:</span>
+                                    <span id="consult-chronic-diseases" class="doc-fact-val">Hipertensão Arterial</span>
+                                </div>
+                                <div class="doc-fact-item">
+                                    <span class="doc-fact-label">Uso Contínuo:</span>
+                                    <span id="consult-meds" class="doc-fact-val">Losartana 50mg (1x ao dia)</span>
+                                </div>
+                                <div class="doc-fact-item">
+                                    <span class="doc-fact-label">Alergias:</span>
+                                    <span id="consult-allergies" class="doc-fact-val alert-text">Nenhuma relatada</span>
+                                </div>
+                                <div class="doc-fact-item">
+                                    <span class="doc-fact-label">Última Consulta:</span>
+                                    <span class="doc-fact-val">15/04/2025 (Dr. Roberto Costa)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="doc-box" style="margin-top: 12px;">
+                            <h4 class="doc-box-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                                Sinais Vitais (Triagem)
+                            </h4>
+                            <div class="vitals-grid">
+                                <div class="vital-item">
+                                    <span class="vital-label">Pressão</span>
+                                    <span class="vital-value">120/80 <small>mmHg</small></span>
+                                </div>
+                                <div class="vital-item">
+                                    <span class="vital-label">Peso</span>
+                                    <span class="vital-value">68.5 <small>kg</small></span>
+                                </div>
+                                <div class="vital-item">
+                                    <span class="vital-label">Temp</span>
+                                    <span class="vital-value">36.6 <small>°C</small></span>
+                                </div>
+                                <div class="vital-item">
+                                    <span class="vital-label">SpO2</span>
+                                    <span class="vital-value">98 <small>%</small></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Clinical Record, Anamnese & Prescription -->
+                    <div class="doc-consult-col-right">
+                        
+                        <!-- Form Clinical Record -->
+                        <div class="doc-box">
+                            <h4 class="doc-box-title">Anamnese & Evolução Clínica</h4>
+                            
+                            <div class="input-group" style="margin-bottom: 12px;">
+                                <label style="font-size: 13px; font-weight: 600; color: #333; margin-bottom: 4px; display: block;">Queixa Principal e Histórico da Moléstia Atual (HMA)</label>
+                                <textarea id="consult-anamnese" rows="3" placeholder="Descreva os sintomas relatados pelo paciente, duração e evolução..." style="width: 100%; border: 1px solid var(--border-color); border-radius: 10px; padding: 10px 12px; font-family: inherit; font-size: 13px; resize: vertical;">Paciente comparece para consulta de rotina. Relata episódios ocasionais de cefaleia leve. Sem queixas sistêmicas.</textarea>
+                            </div>
+
+                            <div class="input-group" style="margin-bottom: 12px;">
+                                <label style="font-size: 13px; font-weight: 600; color: #333; margin-bottom: 4px; display: block;">Exame Físico / Conduta</label>
+                                <textarea id="consult-exame-fisico" rows="2" placeholder="Achados no exame físico..." style="width: 100%; border: 1px solid var(--border-color); border-radius: 10px; padding: 10px 12px; font-family: inherit; font-size: 13px; resize: vertical;">Bom estado geral, corada, acianótica. Ausculta cardíaca com ritmo regular 2T sem sopros. Ausculta pulmonar limpa.</textarea>
+                            </div>
+
+                            <div class="input-group" style="margin-bottom: 8px;">
+                                <label style="font-size: 13px; font-weight: 600; color: #333; margin-bottom: 4px; display: block;">Diagnóstico / Hipótese (CID-10)</label>
+                                <input type="text" id="consult-cid" placeholder="Ex: I10 - Hipertensão essencial (primária)" value="I10 - Hipertensão essencial" style="width: 100%; border: 1px solid var(--border-color); border-radius: 10px; padding: 10px 12px; font-size: 13px;">
+                            </div>
+                        </div>
+
+                        <!-- Prescription Generator Section -->
+                        <div class="doc-box" style="margin-top: 14px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <h4 class="doc-box-title" style="margin: 0;">Prescrição Médica & Medicamentos</h4>
+                                <button type="button" id="btn-add-prescription-item" class="btn-doctor-sec" style="padding: 4px 10px; font-size: 12px; font-weight: 600;">
+                                    + Adicionar Medicamento
+                                </button>
+                            </div>
+
+                            <!-- Prescription Table / List -->
+                            <div id="prescription-items-container" class="prescription-list">
+                                <div class="prescription-row">
+                                    <input type="text" class="presc-med-name" placeholder="Nome do medicamento (ex: Dipirona 500mg)" value="Losartana Potássica 50mg" style="flex: 2;">
+                                    <input type="text" class="presc-posology" placeholder="Posologia (ex: 1 comprimido de 12/12h)" value="Tomar 1 comprimido pela manhã por 30 dias" style="flex: 3;">
+                                    <button type="button" class="btn-remove-presc" title="Remover item">&times;</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Bar for Consultation -->
+                        <div class="doc-consult-actions" style="margin-top: 16px; display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap;">
+                            <button type="button" id="btn-print-recipe" class="btn-doctor-sec" style="display: flex; align-items: center; gap: 6px;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                                Imprimir Prescrição / Atestado
+                            </button>
+                            <button type="button" id="btn-finish-consultation" class="btn-primary" style="background: #1D6B35; border-color: #1D6B35; width: auto; padding: 10px 24px; font-size: 14px;">
+                                Concluir Atendimento
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- TAB 3: MEUS PACIENTES & PRONTUÁRIOS -->
+        <div id="tab-doctor-patients" class="tab-content" style="overflow-y: hidden;">
+            <div style="width: 100%; display: flex; flex-direction: column; align-items: center; height: 100%;">
+                
+                <div class="dash-header" style="text-align: center; display: flex; flex-direction: column; align-items: center; margin-bottom: 12px; padding-top: 0; padding-bottom: 4px; flex-shrink: 0;">
+                    <span class="badge-doctor-header">Consultório Digital</span>
+                    <h1 style="font-size: 22px; margin-bottom: 2px;">Meus Pacientes</h1>
+                    <p style="font-size: 13px;">Histórico completo de atendimentos e prontuários</p>
+                </div>
+
+                <!-- Search Input -->
+                <div class="input-group" style="position: relative; margin-bottom: 16px; flex-shrink: 0; width: 100%; max-width: 600px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#AAA" stroke-width="2" style="position: absolute; left: 14px; top: 14px; width: 20px; height: 20px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input id="search-doctor-patient-input" type="text" placeholder="Buscar paciente por nome ou CPF..." style="padding: 14px 18px 14px 44px; border: 1px solid var(--border-color); border-radius: 14px; font-size: 14px; width: 100%;">
+                </div>
+
+                <!-- Patients List -->
+                <div class="history-list" id="doctor-patients-history-list" style="flex: 1; overflow-y: auto; margin-bottom: 32px; width: 100%; max-width: 600px; padding-right: 4px;">
+                    
+                    <div class="history-card doc-patient-history-card" style="align-items: center; justify-content: space-between; flex-direction: row; cursor: pointer; padding: 16px;">
+                        <div style="display: flex; align-items: center;">
+                            <div class="avatar-initials" style="background: #0056D2; color: white;">MC</div>
+                            <div>
+                                <strong style="font-size: 15px; color: #111;">Maria Clara Silva</strong>
+                                <p style="font-size: 12px; color: #666; margin-top: 2px;">3 Consultas • Última em 12/06/2025</p>
+                            </div>
+                        </div>
+                        <button class="btn-doctor-sec" onclick="alert('Visualizando histórico médico de Maria Clara Silva')">Ver Prontuário</button>
+                    </div>
+
+                    <div class="history-card doc-patient-history-card" style="align-items: center; justify-content: space-between; flex-direction: row; cursor: pointer; padding: 16px;">
+                        <div style="display: flex; align-items: center;">
+                            <div class="avatar-initials" style="background: #1D6B35; color: white;">JP</div>
+                            <div>
+                                <strong style="font-size: 15px; color: #111;">João Pedro Lima</strong>
+                                <p style="font-size: 12px; color: #666; margin-top: 2px;">1 Consulta • Hoje às 09:30</p>
+                            </div>
+                        </div>
+                        <button class="btn-doctor-sec" onclick="alert('Visualizando histórico médico de João Pedro Lima')">Ver Prontuário</button>
+                    </div>
+
+                    <div class="history-card doc-patient-history-card" style="align-items: center; justify-content: space-between; flex-direction: row; cursor: pointer; padding: 16px;">
+                        <div style="display: flex; align-items: center;">
+                            <div class="avatar-initials" style="background: #666; color: white;">AB</div>
+                            <div>
+                                <strong style="font-size: 15px; color: #111;">Ana Beatriz Costa</strong>
+                                <p style="font-size: 12px; color: #666; margin-top: 2px;">2 Consultas • Última em 08/04/2025</p>
+                            </div>
+                        </div>
+                        <button class="btn-doctor-sec" onclick="alert('Visualizando histórico médico de Ana Beatriz Costa')">Ver Prontuário</button>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- TAB 4: PERFIL MÉDICO & CONFIGURAÇÕES -->
+        <div id="tab-doctor-profile" class="tab-content" style="overflow-y: hidden;">
+            <div style="width: 100%; display: flex; flex-direction: column; align-items: center; flex: 1; overflow-y: auto; padding-bottom: 24px;">
+                
+                <div class="dash-header" style="text-align: center; display: flex; flex-direction: column; align-items: center;">
+                    <span class="badge-doctor-header">Perfil Profissional</span>
+                    <h1>Dr. Roberto Costa</h1>
+                    <p style="margin-bottom: 8px;">Cardiologia & Clínica Médica • CRM 12345/SP</p>
+                </div>
+
+                <div style="display: flex; flex-direction: column; align-items: center; margin: 16px 0;">
+                    <div class="profile-admin-avatar" style="background: #0056D2;">RC</div>
+                    <div style="font-size: 18px; font-weight: 700; color: #111; margin-bottom: 4px;">Dr. Roberto Costa</div>
+                    <div style="background-color: #E6F0FF; color: #0056D2; padding: 4px 14px; border-radius: 12px; font-size: 12px; font-weight: 700;">Médico Titular • Sala 02</div>
+                </div>
+
+                <!-- Doctor Profile Form -->
+                <div class="profile-container" style="width: 100%; max-width: 600px;">
+                    <div class="profile-grid">
+                        <div class="profile-input-group">
+                            <label style="font-size: 11px; color: #666; margin-bottom: 2px; display: block;">CRM</label>
+                            <input type="text" value="12345/SP" readonly style="background: #F9F9F9;">
+                        </div>
+                        <div class="profile-input-group">
+                            <label style="font-size: 11px; color: #666; margin-bottom: 2px; display: block;">Especialidade Principal</label>
+                            <input type="text" value="Cardiologia" id="doc-profile-spec">
+                        </div>
+                        <div class="profile-input-group">
+                            <label style="font-size: 11px; color: #666; margin-bottom: 2px; display: block;">E-mail Corporativo</label>
+                            <input type="email" value="roberto.costa@checkupnow.com" id="doc-profile-email">
+                        </div>
+                        <div class="profile-input-group">
+                            <label style="font-size: 11px; color: #666; margin-bottom: 2px; display: block;">Telefone de Contato</label>
+                            <input type="text" value="(11) 98765-4321" id="doc-profile-phone">
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 16px;">
+                        <h4 style="font-size: 14px; font-weight: 700; color: #111; margin-bottom: 8px;">Configurações de Atendimento</h4>
+                        <label class="custom-checkbox">
+                            <input type="checkbox" checked>
+                            <span class="checkmark"></span>
+                            Notificar recepção automaticamente ao chamar paciente
+                        </label>
+                        <label class="custom-checkbox" style="margin-top: 8px;">
+                            <input type="checkbox" checked>
+                            <span class="checkmark"></span>
+                            Exibir avisos de alergias do paciente em destaque
+                        </label>
+                    </div>
+
+                    <div class="profile-action" style="margin-top: 20px;">
+                        <button type="button" class="btn-primary" id="btn-save-doctor-profile" style="background: #0056D2; border-color: #0056D2;">Salvar Alterações</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- BOTTOM NAVIGATION -->
+        <div class="bottom-nav">
+            <button class="nav-btn active" data-target="tab-doctor-agenda" aria-label="Agenda de Atendimentos">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+            </button>
+            <button class="nav-btn" data-target="tab-doctor-consultation" aria-label="Prontuário & Atendimento">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+            </button>
+            <button class="nav-btn" data-target="tab-doctor-patients" aria-label="Meus Pacientes">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+            </button>
+            <button class="nav-btn" data-target="tab-doctor-profile" aria-label="Perfil do Médico">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </button>
+        </div>
+
+    </div>
+
+    <!-- MODAL DE PRESCRIÇÃO / ATESTADO PARA IMPRESSÃO SIMULADA -->
+    <div id="recipe-print-modal" class="modal-backdrop" style="display: none;">
+        <div class="modal-content recipe-paper">
+            <div class="recipe-header">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="35" y="0" width="30" height="100" rx="10" fill="#52D468"/>
+                        <rect x="0" y="35" width="100" height="30" rx="10" fill="#52D468"/>
+                        <path d="M25 55 L40 70 L85 30" stroke="white" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <div>
+                        <h3 style="margin: 0; font-size: 18px; color: #111;">CheckUp Now! Clinic</h3>
+                        <p style="margin: 0; font-size: 11px; color: #666;">Unidade Central • Tel: (11) 3000-0000</p>
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <strong style="font-size: 13px; color: #0056D2;">PRESCRIÇÃO MÉDICA</strong>
+                    <p style="margin: 2px 0 0 0; font-size: 11px; color: #666;" id="modal-print-date">Data: 31/07/2026</p>
+                </div>
+            </div>
+
+            <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 16px 0;">
+
+            <div class="recipe-patient-box" style="margin-bottom: 20px;">
+                <p style="margin: 0; font-size: 14px;"><strong>Paciente:</strong> <span id="modal-patient-name">Maria Clara Silva</span></p>
+                <p style="margin: 4px 0 0 0; font-size: 12px; color: #666;"><strong>CPF:</strong> 123.456.789-00</p>
+            </div>
+
+            <div class="recipe-body" style="margin-bottom: 40px; min-height: 140px;">
+                <h4 style="font-size: 13px; text-transform: uppercase; color: #444; border-bottom: 2px solid #52D468; padding-bottom: 4px; display: inline-block;">Uso Oral:</h4>
+                <ol id="modal-medicines-list" style="margin-top: 12px; padding-left: 20px; font-size: 14px; line-height: 1.8;">
+                    <li><strong>Losartana Potássica 50mg</strong><br><span style="color: #555; font-size: 13px;">Tomar 1 comprimido pela manhã por 30 dias.</span></li>
+                </ol>
+            </div>
+
+            <div class="recipe-footer" style="text-align: center; margin-top: auto; padding-top: 20px; border-top: 1px dashed #CCC;">
+                <div style="width: 200px; border-bottom: 1px solid #333; margin: 0 auto 8px auto;"></div>
+                <strong style="font-size: 14px; color: #111;">Dr. Roberto Costa</strong>
+                <p style="margin: 2px 0 0 0; font-size: 12px; color: #666;">Cardiologia • CRM 12345/SP</p>
+                <p style="margin: 8px 0 0 0; font-size: 10px; color: #999;">Assinatura Digitalizada Fictícia CheckUp Now!</p>
+            </div>
+
+            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;" class="no-print">
+                <button type="button" class="btn-doctor-sec" onclick="document.getElementById('recipe-print-modal').style.display='none'">Fechar</button>
+                <button type="button" class="btn-primary" style="width: auto; background: #0056D2;" onclick="window.print()">Imprimir PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
