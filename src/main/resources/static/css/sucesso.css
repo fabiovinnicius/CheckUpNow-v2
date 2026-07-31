@@ -1,0 +1,50 @@
+.card-center {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.success-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 440px;
+  padding: 40px;
+}
+
+.success-icon {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 24px;
+}
+
+.success-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.success-content h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111111;
+  margin-bottom: 16px;
+  letter-spacing: -0.5px;
+}
+
+.success-content p {
+  font-size: 15px;
+  color: #111111;
+  line-height: 1.5;
+  margin-bottom: 40px;
+}
+
+.btn-success {
+  width: 100%;
+  max-width: 260px;
+  text-decoration: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 14px 0;
+}

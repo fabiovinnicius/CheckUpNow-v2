@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CheckUp Now! - Recuperar Senha</title>
+    <link rel="icon" href="data:image/svg+xml;charset=utf-8,%3Csvg width='100' height='100' viewBox='0 0 100 100' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='35' y='0' width='30' height='100' rx='10' fill='%2352D468'/%3E%3Crect x='0' y='35' width='100' height='30' rx='10' fill='%2352D468'/%3E%3Cpath d='M25 55 L40 70 L85 30' stroke='white' stroke-width='12' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" type="image/svg+xml">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/style.css">
+    
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+    <div class="bg-wave bg-wave-tl"></div>
+    <div class="bg-wave bg-wave-br"></div>
+
+    <div class="card">
+        <div class="hero-section">
+            <div class="logo-container">
+                <svg width="80" height="80" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="35" y="0" width="30" height="100" rx="10" fill="var(--primary)"/>
+                    <rect x="0" y="35" width="100" height="30" rx="10" fill="var(--primary)"/>
+                    <path d="M25 55 L40 70 L85 30" stroke="white" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div class="logo-text">CheckUp Now!</div>
+            <h1 class="hero-title">Marque suas consultas sem burocracia</h1>
+            <p class="hero-subtitle">Agende seus horários com os melhores profissionais do mercado</p>
+        </div>
+
+        <div class="form-section">
+            <h2 class="form-title" style="margin-bottom: 12px;">Recuperar Senha</h2>
+            <p style="margin-bottom: 32px; color: var(--text-gray); font-size: 15px; line-height: 1.5; font-weight: 400;">
+                Insira o e-mail associado à sua conta e enviaremos um link seguro para você redefinir sua senha.
+            </p>
+            <form action="login.html" method="GET">
+                <div class="input-group">
+                    <input type="email" placeholder="Inserir email" required>
+                </div>
+                
+                <div class="form-actions">
+                    <div class="login-link">
+                        Lembrou sua senha? <a href="login.html">Faça Login</a>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary">Enviar link de recuperação</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

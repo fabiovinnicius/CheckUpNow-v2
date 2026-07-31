@@ -1,0 +1,12 @@
+com\checkupnow\controller\AuthController.class
+com\checkupnow\config\DataInitializer.class
+com\checkupnow\controller\UserController.class
+com\checkupnow\CheckUpNowApplication.class
+com\checkupnow\model\Appointment.class
+com\checkupnow\model\Doctor.class
+com\checkupnow\model\User.class
+com\checkupnow\controller\DoctorController.class
+com\checkupnow\repository\DoctorRepository.class
+com\checkupnow\controller\AppointmentController.class
+com\checkupnow\repository\UserRepository.class
+com\checkupnow\repository\AppointmentRepository.class
