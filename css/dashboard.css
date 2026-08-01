@@ -751,6 +751,13 @@
   gap: 16px;
 }
 
+.doc-consult-col-left,
+.doc-consult-col-right {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
 @media (max-width: 850px) {
   .doc-consult-layout {
     grid-template-columns: 1fr;

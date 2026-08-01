@@ -222,7 +222,7 @@
                             </div>
                         </div>
 
-                        <div class="doc-box" style="margin-top: 12px;">
+                        <div class="doc-box">
                             <h4 class="doc-box-title">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
                                 Sinais Vitais (Triagem)
@@ -253,7 +253,10 @@
                         
                         <!-- Form Clinical Record -->
                         <div class="doc-box">
-                            <h4 class="doc-box-title">Anamnese & Evolução Clínica</h4>
+                            <h4 class="doc-box-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                Anamnese & Evolução Clínica
+                            </h4>
                             
                             <div class="input-group" style="margin-bottom: 12px;">
                                 <label style="font-size: 13px; font-weight: 600; color: #333; margin-bottom: 4px; display: block;">Queixa Principal e Histórico da Moléstia Atual (HMA)</label>
@@ -272,9 +275,12 @@
                         </div>
 
                         <!-- Prescription Generator Section -->
-                        <div class="doc-box" style="margin-top: 14px;">
+                        <div class="doc-box">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                                <h4 class="doc-box-title" style="margin: 0;">Prescrição Médica & Medicamentos</h4>
+                                <h4 class="doc-box-title" style="margin: 0;">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"></path><path d="m8.5 8.5 7 7"></path></svg>
+                                    Prescrição Médica & Medicamentos
+                                </h4>
                                 <button type="button" id="btn-add-prescription-item" class="btn-doctor-sec" style="padding: 4px 10px; font-size: 12px; font-weight: 600;">
                                     + Adicionar Medicamento
                                 </button>
@@ -357,22 +363,16 @@
 
         <!-- TAB 4: PERFIL MÉDICO & CONFIGURAÇÕES -->
         <div id="tab-doctor-profile" class="tab-content" style="overflow-y: hidden;">
-            <div style="width: 100%; display: flex; flex-direction: column; align-items: center; flex: 1; overflow-y: auto; padding-bottom: 24px;">
+            <div style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; overflow: hidden;">
                 
-                <div class="dash-header" style="text-align: center; display: flex; flex-direction: column; align-items: center;">
+                <div class="dash-header" style="text-align: center; display: flex; flex-direction: column; align-items: center; margin-bottom: 12px; padding: 0;">
                     <span class="badge-doctor-header">Perfil Profissional</span>
-                    <h1>Dr. Roberto Costa</h1>
-                    <p style="margin-bottom: 8px;">Cardiologia & Clínica Médica • CRM 12345/SP</p>
-                </div>
-
-                <div style="display: flex; flex-direction: column; align-items: center; margin: 16px 0;">
-                    <div class="profile-admin-avatar" style="background: #0056D2;">RC</div>
-                    <div style="font-size: 18px; font-weight: 700; color: #111; margin-bottom: 4px;">Dr. Roberto Costa</div>
-                    <div style="background-color: #E6F0FF; color: #0056D2; padding: 4px 14px; border-radius: 12px; font-size: 12px; font-weight: 700;">Médico Titular • Sala 02</div>
+                    <h1 style="margin: 4px 0 2px 0;">Dr. Roberto Costa</h1>
+                    <p style="margin: 0; font-size: 13px; color: #666;">Cardiologia & Clínica Médica • CRM 12345/SP • Sala 02</p>
                 </div>
 
                 <!-- Doctor Profile Form -->
-                <div class="profile-container" style="width: 100%; max-width: 600px;">
+                <div class="profile-container" style="width: 100%; max-width: 580px;">
                     <div class="profile-grid">
                         <div class="profile-input-group">
                             <label style="font-size: 11px; color: #666; margin-bottom: 2px; display: block;">CRM</label>
@@ -392,22 +392,22 @@
                         </div>
                     </div>
 
-                    <div style="margin-top: 16px;">
-                        <h4 style="font-size: 14px; font-weight: 700; color: #111; margin-bottom: 8px;">Configurações de Atendimento</h4>
+                    <div style="margin-top: 14px;">
+                        <h4 style="font-size: 13px; font-weight: 700; color: #111; margin-bottom: 8px;">Configurações de Atendimento</h4>
                         <label class="custom-checkbox">
                             <input type="checkbox" checked>
                             <span class="checkmark"></span>
                             Notificar recepção automaticamente ao chamar paciente
                         </label>
-                        <label class="custom-checkbox" style="margin-top: 8px;">
+                        <label class="custom-checkbox" style="margin-top: 6px;">
                             <input type="checkbox" checked>
                             <span class="checkmark"></span>
                             Exibir avisos de alergias do paciente em destaque
                         </label>
                     </div>
 
-                    <div class="profile-action" style="margin-top: 20px;">
-                        <button type="button" class="btn-primary" id="btn-save-doctor-profile" style="background: #0056D2; border-color: #0056D2;">Salvar Alterações</button>
+                    <div class="profile-action" style="margin-top: 16px;">
+                        <button type="button" class="btn-primary" id="btn-save-doctor-profile">Salvar Alterações</button>
                     </div>
                 </div>
 

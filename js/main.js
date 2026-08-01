@@ -1133,7 +1133,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btnSaveDoctorProfile.style.backgroundColor = '#1D6B35';
             setTimeout(() => {
                 btnSaveDoctorProfile.textContent = originalText;
-                btnSaveDoctorProfile.style.backgroundColor = '#0056D2';
+                btnSaveDoctorProfile.style.backgroundColor = '';
             }, 2500);
         });
     }
