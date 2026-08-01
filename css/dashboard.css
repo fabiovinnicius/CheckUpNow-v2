@@ -699,6 +699,15 @@
   transition: opacity 0.2s;
 }
 
+.btn-doctor-pri svg,
+.btn-doctor-sec svg {
+  width: 15px;
+  height: 15px;
+  max-width: 15px;
+  max-height: 15px;
+  flex-shrink: 0;
+}
+
 .btn-doctor-pri:hover {
   opacity: 0.9;
 }
