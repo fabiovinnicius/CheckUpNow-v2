@@ -5,6 +5,7 @@ import com.checkupnow.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -15,6 +16,7 @@ import java.util.Optional;
 public class AuthController {
 
     private final UserRepository userRepository;
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public AuthController(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -22,11 +24,11 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody Map<String, String> payload, HttpSession session) {
-        String name = payload.get("name");
-        String email = payload.get("email");
+        String name = normalize(payload.get("name"));
+        String email = normalizeEmail(payload.get("email"));
         String password = payload.get("password");
 
-        if (email == null || password == null || name == null) {
+        if (email == null || password == null || password.length() < 8 || name == null) {
             return ResponseEntity.badRequest().body(Map.of("message", "Preencha todos os campos obrigatórios."));
         }
 
@@ -34,7 +36,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", "E-mail já cadastrado."));
         }
 
-        User user = new User(name, email, password);
+        User user = new User(name, email, passwordEncoder.encode(password));
         User savedUser = userRepository.save(user);
 
         session.setAttribute("userId", savedUser.getId());
@@ -43,12 +45,16 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> payload, HttpSession session) {
-        String email = payload.get("email");
+        String email = normalizeEmail(payload.get("email"));
         String password = payload.get("password");
+
+        if (email == null || password == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Informe e-mail e senha."));
+        }
 
         Optional<User> userOpt = userRepository.findByEmail(email);
 
-        if (userOpt.isPresent() && userOpt.get().getPassword().equals(password)) {
+        if (userOpt.isPresent() && passwordEncoder.matches(password, userOpt.get().getPassword())) {
             User user = userOpt.get();
             session.setAttribute("userId", user.getId());
             return ResponseEntity.ok(user);
@@ -73,5 +79,15 @@ public class AuthController {
     public ResponseEntity<?> logout(HttpSession session) {
         session.invalidate();
         return ResponseEntity.ok(Map.of("message", "Sessão encerrada com sucesso."));
+    }
+
+    private String normalize(String value) {
+        if (value == null || value.isBlank()) return null;
+        return value.trim();
+    }
+
+    private String normalizeEmail(String value) {
+        String normalized = normalize(value);
+        return normalized == null ? null : normalized.toLowerCase();
     }
 }

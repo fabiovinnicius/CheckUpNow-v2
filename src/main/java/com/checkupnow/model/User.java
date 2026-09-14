@@ -1,5 +1,6 @@
 package com.checkupnow.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 @Entity
@@ -17,6 +18,7 @@ public class User {
     private String email;
 
     @Column(nullable = false)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     private String birthDate;
@@ -27,7 +29,7 @@ public class User {
     private String healthPlan;
     private Boolean hasChronicDisease;
     private Boolean takesContinuousMedication;
-    
+
     @Column(length = 500000)
     private String avatarUrl;
 

@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/appointments")
@@ -26,11 +25,8 @@ public class AppointmentController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getUserAppointments(HttpSession session, @RequestParam(value = "userId", required = false) Long paramUserId) {
+    public ResponseEntity<?> getUserAppointments(HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
-            userId = paramUserId;
-        }
 
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Usuário não autenticado."));
@@ -43,28 +39,11 @@ public class AppointmentController {
     @PostMapping
     public ResponseEntity<?> createAppointment(@RequestBody Map<String, Object> payload, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
-        if (userId == null && payload.containsKey("userId")) {
-            Object rawId = payload.get("userId");
-            if (rawId instanceof Number) {
-                userId = ((Number) rawId).longValue();
-            } else if (rawId instanceof String) {
-                try {
-                    userId = Long.parseLong((String) rawId);
-                } catch (NumberFormatException ignored) {}
-            }
-        }
-
         if (userId == null) {
-            // Fallback to first user in system if available, or create temporary guest
-            Optional<User> firstUser = userRepository.findAll().stream().findFirst();
-            if (firstUser.isPresent()) {
-                userId = firstUser.get().getId();
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Usuário não identificado para agendamento."));
-            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Usuário não autenticado."));
         }
 
-        Optional<User> userOpt = userRepository.findById(userId);
+        var userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("message", "Usuário não encontrado."));
         }
@@ -86,11 +65,18 @@ public class AppointmentController {
     }
 
     @PutMapping("/{id}/cancel")
-    public ResponseEntity<?> cancelAppointment(@PathVariable Long id) {
+    public ResponseEntity<?> cancelAppointment(@PathVariable Long id, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Usuário não autenticado."));
+        }
         return appointmentRepository.findById(id).map(appointment -> {
+            if (!appointment.getUser().getId().equals(userId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body((Object) Map.of("message", "Consulta não pertence ao usuário autenticado."));
+            }
             appointment.setStatus("CANCELADO");
             Appointment updated = appointmentRepository.save(appointment);
-            return ResponseEntity.ok(updated);
+            return ResponseEntity.ok((Object) updated);
         }).orElse(ResponseEntity.notFound().build());
     }
 }

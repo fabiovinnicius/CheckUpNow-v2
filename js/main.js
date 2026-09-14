@@ -1,8 +1,21 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+
+    async function getErrorMessage(response, fallback) {
+        try {
+            const body = await response.json();
+            return body.message || fallback;
+        } catch (_) {
+            return fallback;
+        }
+    }
+
     // ----------------------------------------------------
     // Auth & Forms Handling (Java REST Integration)
     // ----------------------------------------------------
-    const registerForm = document.querySelector('form[action="dashboard.html"]');
+    const registerForm = currentPage === 'index.html'
+        ? document.querySelector('form[action="dashboard.html"]')
+        : null;
     if (registerForm) {
         registerForm.addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -23,17 +36,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     localStorage.setItem('checkupUser', JSON.stringify(user));
                     window.location.href = 'info-adicionais.html';
                 } else {
-                    const err = await response.json();
-                    alert(err.message || 'Erro ao registrar usuário.');
+                    alert(await getErrorMessage(response, 'Erro ao registrar usuário.'));
                 }
             } catch (err) {
-                console.warn('Backend endpoint indisponível, simulando cadastro:', err);
-                window.location.href = 'info-adicionais.html';
+                console.error('Falha ao registrar usuário:', err);
+                alert('Não foi possível conectar ao servidor. Tente novamente.');
             }
         });
     }
 
-    const isLoginPage = window.location.pathname.includes('login.html');
+    const isLoginPage = currentPage === 'login.html';
     if (isLoginPage) {
         const loginFormEl = document.querySelector('form');
         if (loginFormEl) {
@@ -54,12 +66,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         localStorage.setItem('checkupUser', JSON.stringify(user));
                         window.location.href = 'dashboard.html';
                     } else {
-                        const err = await response.json();
-                        alert(err.message || 'E-mail ou senha inválidos.');
+                        alert(await getErrorMessage(response, 'E-mail ou senha inválidos.'));
                     }
                 } catch (err) {
-                    console.warn('Backend endpoint indisponível, simulando login:', err);
-                    window.location.href = 'dashboard.html';
+                    console.error('Falha ao autenticar:', err);
+                    alert('Não foi possível conectar ao servidor. Tente novamente.');
                 }
             });
         }
@@ -70,7 +81,11 @@ document.addEventListener('DOMContentLoaded', () => {
         infoForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             const storedUser = JSON.parse(localStorage.getItem('checkupUser') || '{}');
-            const userId = storedUser.id || 1;
+            const userId = storedUser.id;
+            if (!userId) {
+                window.location.href = 'login.html';
+                return;
+            }
 
             const birthDate = document.getElementById('nascimento')?.value;
             const cep = document.getElementById('cep')?.value;
@@ -86,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const takesContinuousMedication = checkboxes[1] ? checkboxes[1].checked : false;
 
             try {
-                await fetch(`/api/users/${userId}/additional-info`, {
+                const response = await fetch(`/api/users/${userId}/additional-info`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -94,8 +109,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         hasChronicDisease, takesContinuousMedication
                     })
                 });
+                if (!response.ok) {
+                    alert(await getErrorMessage(response, 'Não foi possível salvar seus dados.'));
+                    return;
+                }
             } catch (err) {
-                console.warn('Falha ao atualizar dados no backend Java:', err);
+                console.error('Falha ao atualizar dados:', err);
+                alert('Não foi possível conectar ao servidor. Tente novamente.');
+                return;
             }
             window.location.href = 'sucesso.html';
         });
@@ -116,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const nascimentoInput = document.getElementById('nascimento');
     if (nascimentoInput) {
         nascimentoInput.addEventListener('input', function(e) {
-            let val = e.target.value.replace(/\D/g, '').substring(0, 8); 
+            let val = e.target.value.replace(/\D/g, '').substring(0, 8);
             let formatted = '';
             if (val.length > 0) formatted += val.substring(0, 2);
             if (val.length > 2) formatted += '/' + val.substring(2, 4);
@@ -128,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const contatoInput = document.getElementById('contato');
     if (contatoInput) {
         contatoInput.addEventListener('input', function(e) {
-            let val = e.target.value.replace(/\D/g, '').substring(0, 11); 
+            let val = e.target.value.replace(/\D/g, '').substring(0, 11);
             let formatted = '';
             if (val.length > 0) formatted = '(' + val.substring(0, 2);
             if (val.length > 2) {
@@ -173,11 +194,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // ----------------------------------------------------
     const navBtns = document.querySelectorAll('.nav-btn');
     const tabContents = document.querySelectorAll('.tab-content');
+
     if (navBtns.length > 0 && tabContents.length > 0) {
         navBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 navBtns.forEach(b => b.classList.remove('active'));
                 tabContents.forEach(tab => tab.classList.remove('active'));
+
                 btn.classList.add('active');
                 const targetId = btn.getAttribute('data-target');
                 const targetTab = document.getElementById(targetId);
@@ -214,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    const specialtyBtns = document.querySelectorAll('.specialty-btn:not(.admin-grid-btn)');
+    const specialtyBtns = document.querySelectorAll('.specialty-btn');
     const agendaHeader = document.getElementById('agenda-header');
     const specialtiesSection = document.getElementById('specialties-section');
     const bookingSection = document.getElementById('booking-section');
@@ -228,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const specialtyName = btn.textContent.trim();
                 bookingTitle.textContent = `Agendando: ${specialtyName}`;
                 doctorSelect.innerHTML = '<option value="" disabled selected>Selecione o médico</option>';
-                
+
                 try {
                     const resp = await fetch(`/api/doctors/specialty?name=${encodeURIComponent(specialtyName)}`);
                     if (resp.ok) {
@@ -275,44 +298,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Admin Grid Navigation
-    const adminGridBtns = document.querySelectorAll('.admin-grid-btn');
-    const adminMainMenu = document.getElementById('admin-main-menu');
-    const adminSections = document.querySelectorAll('.admin-section');
-    const btnBackAdmins = document.querySelectorAll('.btn-back-admin');
-    if (adminGridBtns.length > 0 && adminMainMenu) {
-        adminGridBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const targetId = btn.getAttribute('data-target');
-                const targetSection = document.getElementById(targetId);
-                if (targetSection) {
-                    adminMainMenu.style.display = 'none';
-                    adminSections.forEach(sec => sec.style.display = 'none');
-                    targetSection.style.display = targetSection.classList.contains('booking-section') ? 'flex' : 'block';
-                    if (targetSection.classList.contains('history-container') && targetId !== 'admin-agenda') {
-                        targetSection.style.display = 'flex';
-                    }
-                }
-            });
-        });
-        btnBackAdmins.forEach(btn => {
-            btn.addEventListener('click', () => {
-                adminSections.forEach(sec => sec.style.display = 'none');
-                adminMainMenu.style.display = 'block';
-            });
-        });
-    }
-
     // ----------------------------------------------------
     // History Search
     // ----------------------------------------------------
     let historyCards = document.querySelectorAll('.history-card');
     const searchDoctorInput = document.getElementById('search-doctor');
+
     if (searchDoctorInput) {
         searchDoctorInput.addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase();
             historyCards = document.querySelectorAll('.history-card');
-            
+
             historyCards.forEach(card => {
                 const searchText = card.getAttribute('data-search') ? card.getAttribute('data-search').toLowerCase() : card.textContent.toLowerCase();
                 if (searchText.includes(query)) {
@@ -321,28 +317,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     card.style.display = 'none';
                 }
             });
-
-            const historyList = document.getElementById('history-list');
-            if (historyList) {
-                let currentMonthDiv = null;
-                let hasVisibleCardsInMonth = false;
-                Array.from(historyList.children).forEach(child => {
-                    if (child.classList.contains('history-month')) {
-                        if (currentMonthDiv !== null) {
-                            currentMonthDiv.style.display = hasVisibleCardsInMonth ? 'block' : 'none';
-                        }
-                        currentMonthDiv = child;
-                        hasVisibleCardsInMonth = false;
-                    } else if (child.classList.contains('history-card')) {
-                        if (child.style.display === 'flex' || child.style.display === '') {
-                            hasVisibleCardsInMonth = true;
-                        }
-                    }
-                });
-                if (currentMonthDiv !== null) {
-                    currentMonthDiv.style.display = hasVisibleCardsInMonth ? 'block' : 'none';
-                }
-            }
         });
     }
 
@@ -420,6 +394,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const imageUpload = document.getElementById('profile-image-upload');
     const imagePreview = document.getElementById('profile-image-preview');
     const imageIcon = document.getElementById('profile-image-icon');
+
     if (avatarBtn && imageUpload) {
         avatarBtn.addEventListener('click', () => imageUpload.click());
 
@@ -446,36 +421,45 @@ document.addEventListener('DOMContentLoaded', () => {
             const docSelect = document.getElementById('booking-doctor');
             const daySelect = document.getElementById('booking-day');
             const timeSelect = document.getElementById('booking-time');
+
             if (!docSelect.value || !daySelect.value || !timeSelect.value) {
                 alert("Por favor, preencha todos os campos (dia, horário e médico) antes de confirmar.");
                 return;
             }
+
             const specialty = document.getElementById('booking-title').textContent.replace('Agendando: ', '');
             const doctor = docSelect.value;
             const dayText = daySelect.options[daySelect.selectedIndex].text;
             const timeText = timeSelect.options[timeSelect.selectedIndex].text;
 
-            const storedUser = JSON.parse(localStorage.getItem('checkupUser') || '{}');
-            const userId = storedUser.id || 1;
-
+            let savedAppointmentId;
             try {
-                await fetch('/api/appointments', {
+                const response = await fetch('/api/appointments', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        userId: userId,
                         doctorName: doctor,
                         specialty: specialty,
                         appointmentDate: dayText,
                         appointmentTime: timeText
                     })
                 });
+                if (!response.ok) {
+                    alert(await getErrorMessage(response, 'Não foi possível realizar o agendamento.'));
+                    if (response.status === 401) window.location.href = 'login.html';
+                    return;
+                }
+                const savedAppointment = await response.json();
+                savedAppointmentId = savedAppointment.id;
             } catch (err) {
-                console.warn('Aviso: Falha ao comunicar agendamento com backend Java:', err);
+                console.error('Falha ao realizar agendamento:', err);
+                alert('Não foi possível conectar ao servidor. Tente novamente.');
+                return;
             }
 
             const newCard = document.createElement('div');
             newCard.className = 'history-card';
+            newCard.dataset.appointmentId = savedAppointmentId;
             newCard.setAttribute('data-search', `${doctor} ${specialty}`.toLowerCase());
             newCard.innerHTML = `
                 <div class="history-card-top-right">Agendada</div>
@@ -506,29 +490,41 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
             `;
+
             const cancelBtn = newCard.querySelector('.btn-cancel-appt');
-            cancelBtn.addEventListener('click', function() {
+            cancelBtn.addEventListener('click', async function() {
                 const confirmCancel = confirm('Tem certeza que deseja cancelar esta consulta?');
                 if (confirmCancel) {
+                    const appointmentId = newCard.dataset.appointmentId;
+                    const response = await fetch(`/api/appointments/${appointmentId}/cancel`, { method: 'PUT' });
+                    if (!response.ok) {
+                        alert(await getErrorMessage(response, 'Não foi possível cancelar a consulta.'));
+                        return;
+                    }
                     const pill = newCard.querySelector('.status-pill');
                     pill.className = 'status-pill cancelled';
                     pill.innerHTML = '<span class="dot"></span> Cancelada';
                     this.style.display = 'none';
                 }
             });
+
             const historyList = document.getElementById('history-list');
             let futurasLabel = document.getElementById('label-futuras');
+
             if (futurasLabel) {
                 futurasLabel.style.display = 'block';
                 futurasLabel.insertAdjacentElement('afterend', newCard);
             } else if (historyList) {
                 historyList.prepend(newCard);
             }
+
             historyCards = document.querySelectorAll('.history-card');
             alert('Agendamento confirmado com sucesso! Você pode visualizar sua consulta na aba de Histórico.');
+
             document.getElementById('booking-section').style.display = 'none';
             document.getElementById('agenda-header').style.display = 'block';
             document.getElementById('specialties-section').style.display = 'grid';
+
             docSelect.value = '';
             daySelect.value = '';
             timeSelect.value = '';
@@ -544,7 +540,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!hasUnsavedChanges) return;
 
             const storedUser = JSON.parse(localStorage.getItem('checkupUser') || '{}');
-            const userId = storedUser.id || 1;
+            const userId = storedUser.id;
+            if (!userId) {
+                window.location.href = 'login.html';
+                return;
+            }
 
             const nameInput = document.getElementById('nome-profile');
             const emailInput = document.getElementById('email-profile');
@@ -554,7 +554,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const phoneInputProf = document.getElementById('contato-profile');
 
             try {
-                await fetch(`/api/users/${userId}`, {
+                const response = await fetch(`/api/users/${userId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -567,8 +567,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         avatarUrl: imagePreview ? imagePreview.src : undefined
                     })
                 });
+                if (!response.ok) {
+                    alert(await getErrorMessage(response, 'Não foi possível atualizar o perfil.'));
+                    return;
+                }
             } catch (err) {
-                console.warn('Aviso: Falha ao atualizar perfil no Java backend:', err);
+                console.error('Falha ao atualizar perfil:', err);
+                alert('Não foi possível conectar ao servidor. Tente novamente.');
+                return;
             }
 
             const originalText = btnSaveProfile.textContent;
@@ -582,7 +588,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 3000);
         });
     }
-
     // Admin Reception Actions
     const btnConfirmPresence = document.querySelectorAll('.btn-confirm-presence');
     const btnNoShow = document.querySelectorAll('.btn-no-show');
@@ -896,7 +901,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = this.closest('.doctor-patient-card');
             const patientName = card.querySelector('.doc-patient-name')?.textContent || 'Paciente';
             const statusPill = card.querySelector('.pill-patient-status');
-            
+
             if (statusPill) {
                 statusPill.className = 'status-pill ongoing';
                 statusPill.style.background = '#FFF3CD';
@@ -1077,7 +1082,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateDoctorMetrics();
 
                 alert('Atendimento concluído com sucesso! O prontuário foi arquivado.');
-                
+
                 const agendaTabBtn = document.querySelector('.bottom-nav .nav-btn[data-target="tab-doctor-agenda"]');
                 if (agendaTabBtn) agendaTabBtn.click();
             }

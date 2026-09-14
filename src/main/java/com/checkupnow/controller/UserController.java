@@ -2,6 +2,8 @@ package com.checkupnow.controller;
 
 import com.checkupnow.model.User;
 import com.checkupnow.repository.UserRepository;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,14 +20,16 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+    public ResponseEntity<?> getUserById(@PathVariable Long id, HttpSession session) {
+        if (!isCurrentUser(id, session)) return unauthorized();
         return userRepository.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateUserProfile(@PathVariable Long id, @RequestBody User updatedUser) {
+    public ResponseEntity<?> updateUserProfile(@PathVariable Long id, @RequestBody User updatedUser, HttpSession session) {
+        if (!isCurrentUser(id, session)) return unauthorized();
         return userRepository.findById(id).map(user -> {
             if (updatedUser.getName() != null) user.setName(updatedUser.getName());
             if (updatedUser.getEmail() != null) user.setEmail(updatedUser.getEmail());
@@ -45,7 +49,8 @@ public class UserController {
     }
 
     @PutMapping("/{id}/additional-info")
-    public ResponseEntity<?> updateAdditionalInfo(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
+    public ResponseEntity<?> updateAdditionalInfo(@PathVariable Long id, @RequestBody Map<String, Object> payload, HttpSession session) {
+        if (!isCurrentUser(id, session)) return unauthorized();
         return userRepository.findById(id).map(user -> {
             if (payload.containsKey("birthDate")) user.setBirthDate((String) payload.get("birthDate"));
             if (payload.containsKey("cep")) user.setCep((String) payload.get("cep"));
@@ -60,5 +65,14 @@ public class UserController {
             User saved = userRepository.save(user);
             return ResponseEntity.ok(saved);
         }).orElse(ResponseEntity.notFound().build());
+    }
+
+    private boolean isCurrentUser(Long id, HttpSession session) {
+        return id.equals(session.getAttribute("userId"));
+    }
+
+    private ResponseEntity<Map<String, String>> unauthorized() {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("message", "Usuário não autenticado para este recurso."));
     }
 }
