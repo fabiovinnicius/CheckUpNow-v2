@@ -7,6 +7,10 @@ import jakarta.persistence.*;
 @Table(name = "users")
 public class User {
 
+    public static final String ROLE_CLIENT = "CLIENT";
+    public static final String ROLE_ADMIN = "ADMIN";
+    public static final String ROLE_DOCTOR = "DOCTOR";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -20,6 +24,9 @@ public class User {
     @Column(nullable = false)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
+
+    @Column(length = 20)
+    private String role = ROLE_CLIENT;
 
     private String birthDate;
     private String cep;
@@ -68,6 +75,14 @@ public class User {
 
     public String getPassword() {
         return password;
+    }
+
+    public String getRole() {
+        return role == null ? ROLE_CLIENT : role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 
     public void setPassword(String password) {

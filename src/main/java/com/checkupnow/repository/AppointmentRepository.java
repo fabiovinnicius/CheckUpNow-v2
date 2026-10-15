@@ -11,4 +11,8 @@ import java.util.List;
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
     List<Appointment> findByUserOrderByCreatedAtDesc(User user);
     List<Appointment> findByUserIdOrderByCreatedAtDesc(Long userId);
+    List<Appointment> findAllByOrderByCreatedAtDesc();
+    boolean existsByDoctorNameAndAppointmentDateAndAppointmentTimeAndStatusNot(
+            String doctorName, String appointmentDate, String appointmentTime, String status);
+    void deleteByUserId(Long userId);
 }

@@ -64,7 +64,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (response.ok) {
                         const user = await response.json();
                         localStorage.setItem('checkupUser', JSON.stringify(user));
-                        window.location.href = 'dashboard.html';
+                        window.location.href = user.role === 'ADMIN'
+                            ? 'admin-dashboard.html'
+                            : user.role === 'DOCTOR' ? 'doctor-dashboard.html' : 'dashboard.html';
                     } else {
                         alert(await getErrorMessage(response, 'E-mail ou senha inválidos.'));
                     }
@@ -215,29 +217,89 @@ document.addEventListener('DOMContentLoaded', () => {
     // Doctors DB & Specialty Selection
     // ----------------------------------------------------
     const doctorsDB = {
-        "Consultas Clínicas Gerais": ["Dr. Carlos Silva", "Dra. Ana Mendes", "Dr. Roberto Costa"],
-        "Psicologia e Psquiatria": ["Dra. Júlia Nogueira", "Dr. Fernando Almeida"],
-        "Especialidades Médicas": ["Dr. Pedro Henrique", "Dra. Marina Santos", "Dra. Sofia Lima"],
-        "Genética Médica": ["Dr. Ricardo Alves", "Dra. Beatriz Costa"],
-        "Consultas Cirúrgicas": ["Dra. Camila Ribeiro", "Dr. João Paulo"],
-        "Geriatria": ["Dr. Antônio Carlos", "Dra. Lúcia Freitas"],
+        "Clínica Geral": ["Dr. Anderson teste", "Dra. Ana Mendes"],
+        "Cardiologia": ["Dr. Roberto Costa", "Dr. Carlos Silva"],
+        "Dermatologia": ["Dr. Raquel teste", "Dra. Marina Santos"],
+        "Ginecologia": ["Dra. Camila Ribeiro", "Dra. Sofia Lima"],
         "Pediatria": ["Dra. Fernanda Gomes", "Dr. Lucas Martins"],
-        "Outras especialidades": ["Dra. Mariana Silva", "Dr. André Santos"]
+        "Ortopedia": ["Dr. Pedro Henrique", "Dr. André Santos"],
+        "Psicologia": ["Dra. Júlia Nogueira", "Dr. Fernando Almeida"],
+        "Nutrição": ["Dra. Beatriz Costa", "Dr. Gabriel Souza"],
+        "Endocrinologia": ["Dr. Ricardo Alves", "Dra. Helena Martins"],
+        "Neurologia": ["Dr. Antônio Carlos", "Dra. Letícia Ferreira"],
+        "Oftalmologia": ["Dra. Lúcia Freitas", "Dr. Eduardo Ramos"],
+        "Fisioterapia": ["Dra. Mariana Silva", "Dr. João Paulo"]
     };
 
     const timeSelect = document.getElementById('booking-time');
-    if (timeSelect) {
+    const dateInput = document.getElementById('booking-date');
+    let bookingWindowStart = '';
+    let bookingWindowEnd = '';
+
+    function localDateTimeValue(date) {
+        const pad = value => String(value).padStart(2, '0');
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    }
+
+    function applyLocalBookingWindowFallback() {
+        const now = new Date();
+        const start = new Date(now.getTime() + 60000);
+        start.setSeconds(0, 0);
+        const end = new Date(now);
+        end.setFullYear(end.getFullYear() + 1);
+        end.setSeconds(0, 0);
+        bookingWindowStart = localDateTimeValue(start);
+        bookingWindowEnd = localDateTimeValue(end);
+    }
+
+    function applyBookingDateLimits() {
+        if (!dateInput || !bookingWindowStart || !bookingWindowEnd) return;
+        dateInput.min = bookingWindowStart.slice(0, 10);
+        dateInput.max = bookingWindowEnd.slice(0, 10);
+    }
+
+    function populateAvailableTimes() {
+        if (!timeSelect) return;
         timeSelect.innerHTML = '<option value="" disabled selected>Selecione o horário</option>';
+        if (!dateInput?.value || !bookingWindowStart || !bookingWindowEnd) return;
+
+        let availableCount = 0;
         for (let i = 9; i <= 23; i++) {
-            let hour = i < 10 ? `0${i}:00` : `${i}:00`;
-            let option = document.createElement('option');
+            const hour = `${String(i).padStart(2, '0')}:00`;
+            const appointmentDateTime = `${dateInput.value}T${hour}`;
+            if (appointmentDateTime < bookingWindowStart || appointmentDateTime > bookingWindowEnd) continue;
+
+            const option = document.createElement('option');
             option.value = hour;
             option.textContent = hour;
             timeSelect.appendChild(option);
+            availableCount++;
+        }
+
+        if (availableCount === 0) {
+            timeSelect.innerHTML = '<option value="" disabled selected>Nenhum horário disponível nesta data</option>';
         }
     }
 
-    const specialtyBtns = document.querySelectorAll('.specialty-btn');
+    async function loadBookingWindow() {
+        applyLocalBookingWindowFallback();
+        try {
+            const response = await fetch('/api/appointments/window');
+            if (response.ok) {
+                const windowData = await response.json();
+                bookingWindowStart = windowData.startDateTime;
+                bookingWindowEnd = windowData.endDateTime;
+            }
+        } catch (error) {
+            console.warn('Usando horário local para a janela de agendamento.', error);
+        }
+        applyBookingDateLimits();
+        populateAvailableTimes();
+    }
+
+    dateInput?.addEventListener('change', populateAvailableTimes);
+    if (dateInput && timeSelect) loadBookingWindow();
+
     const agendaHeader = document.getElementById('agenda-header');
     const specialtiesSection = document.getElementById('specialties-section');
     const bookingSection = document.getElementById('booking-section');
@@ -245,9 +307,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const doctorSelect = document.getElementById('booking-doctor');
     const btnBackAgenda = document.getElementById('btn-back-agenda');
 
-    if (specialtyBtns.length > 0 && bookingSection) {
-        specialtyBtns.forEach(btn => {
-            btn.addEventListener('click', async () => {
+    if (specialtiesSection && bookingSection) {
+        specialtiesSection.addEventListener('click', async event => {
+            const btn = event.target.closest('.specialty-btn');
+            if (!btn) return;
+                await loadBookingWindow();
                 const specialtyName = btn.textContent.trim();
                 bookingTitle.textContent = `Agendando: ${specialtyName}`;
                 doctorSelect.innerHTML = '<option value="" disabled selected>Selecione o médico</option>';
@@ -276,8 +340,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 agendaHeader.style.display = 'none';
                 specialtiesSection.style.display = 'none';
                 bookingSection.style.display = 'flex';
-            });
         });
+
+        fetch('/api/specialties')
+            .then(response => response.ok ? response.json() : Promise.reject())
+            .then(specialties => {
+                specialtiesSection.innerHTML = specialties.length
+                    ? specialties.map(item => `<button class="specialty-btn">${escapeHtml(item.name)}</button>`).join('')
+                    : '<p class="specialties-loading">Nenhum tipo de consulta disponível no momento.</p>';
+            })
+            .catch(() => {
+                specialtiesSection.innerHTML = Object.keys(doctorsDB)
+                    .map(name => `<button class="specialty-btn">${escapeHtml(name)}</button>`).join('');
+            });
     }
 
     function fallbackDoctors(specialtyName) {
@@ -296,6 +371,123 @@ document.addEventListener('DOMContentLoaded', () => {
             agendaHeader.style.display = 'block';
             specialtiesSection.style.display = 'grid';
         });
+    }
+
+    // ----------------------------------------------------
+    // Patient history (authenticated user + PostgreSQL data)
+    // ----------------------------------------------------
+    const historyListElement = document.getElementById('history-list');
+    const historyPatientName = document.getElementById('history-patient-name');
+
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;');
+    }
+
+    function appointmentStatus(status) {
+        if (status === 'CANCELADO') return { cssClass: 'cancelled', label: 'Cancelada' };
+        if (status === 'CONCLUIDO') return { cssClass: 'done', label: 'Concluída' };
+        return { cssClass: 'ongoing', label: 'Agendada' };
+    }
+
+    function showEmptyHistory() {
+        if (!historyListElement) return;
+        historyListElement.innerHTML = '<div class="history-empty" id="history-empty">Você ainda não possui consultas agendadas.</div>';
+    }
+
+    function createAppointmentCard(appointment) {
+        const status = appointmentStatus(appointment.status);
+        const card = document.createElement('div');
+        card.className = 'history-card';
+        card.dataset.appointmentId = appointment.id;
+        card.setAttribute('data-search', `${appointment.doctorName ?? ''} ${appointment.specialty ?? ''}`.toLowerCase());
+        card.innerHTML = `
+            <div class="history-card-top-right">${escapeHtml(appointment.appointmentDate)}</div>
+            <div class="history-row">
+                <svg class="h-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                <strong>${escapeHtml(appointment.specialty)}</strong>
+            </div>
+            <div class="history-row">
+                <svg class="h-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                <span>Unidade Central – Sala a definir</span>
+            </div>
+            <div class="history-row">
+                <svg class="h-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <span>${escapeHtml(appointment.doctorName)}</span>
+            </div>
+            <div class="history-row space-between">
+                <div class="h-col">
+                    <svg class="h-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span>${escapeHtml(appointment.appointmentDate)} às ${escapeHtml(appointment.appointmentTime)}</span>
+                </div>
+                <div class="h-actions">
+                    <span class="status-pill ${status.cssClass}"><span class="dot"></span> ${status.label}</span>
+                    ${appointment.status === 'AGENDADO' ? '<button class="btn-cancel-appt" title="Cancelar Consulta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>' : ''}
+                </div>
+            </div>
+        `;
+
+        const cancelButton = card.querySelector('.btn-cancel-appt');
+        if (cancelButton) {
+            cancelButton.addEventListener('click', async () => {
+                if (!confirm('Tem certeza que deseja cancelar esta consulta?')) return;
+                const response = await fetch(`/api/appointments/${appointment.id}/cancel`, { method: 'PUT' });
+                if (!response.ok) {
+                    alert(await getErrorMessage(response, 'Não foi possível cancelar a consulta.'));
+                    return;
+                }
+                const updatedAppointment = await response.json();
+                card.replaceWith(createAppointmentCard(updatedAppointment));
+                historyCards = document.querySelectorAll('.history-card');
+            });
+        }
+
+        return card;
+    }
+
+    function renderHistory(appointments) {
+        if (!historyListElement) return;
+        historyListElement.innerHTML = '';
+        if (!appointments.length) {
+            showEmptyHistory();
+            return;
+        }
+        appointments.forEach(appointment => historyListElement.appendChild(createAppointmentCard(appointment)));
+    }
+
+    async function loadPatientDashboard() {
+        if (!historyListElement) return;
+        try {
+            const [userResponse, appointmentsResponse] = await Promise.all([
+                fetch('/api/auth/me'),
+                fetch('/api/appointments')
+            ]);
+
+            if (userResponse.status === 401 || appointmentsResponse.status === 401) {
+                localStorage.removeItem('checkupUser');
+                window.location.href = 'login.html';
+                return;
+            }
+            if (!userResponse.ok || !appointmentsResponse.ok) {
+                throw new Error('Não foi possível carregar o painel.');
+            }
+
+            const user = await userResponse.json();
+            const appointments = await appointmentsResponse.json();
+            localStorage.setItem('checkupUser', JSON.stringify(user));
+            if (historyPatientName) historyPatientName.textContent = user.name;
+            populatePatientProfile(user);
+            renderHistory(appointments);
+            historyCards = document.querySelectorAll('.history-card');
+        } catch (error) {
+            console.error('Falha ao carregar histórico:', error);
+            if (historyPatientName) historyPatientName.textContent = 'Paciente';
+            showEmptyHistory();
+        }
     }
 
     // ----------------------------------------------------
@@ -320,19 +512,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Cancel Button for default card
-    const btnCancelAppt = document.getElementById('btn-cancel-1');
-    const pillStatus1 = document.getElementById('pill-status-1');
-    if (btnCancelAppt && pillStatus1) {
-        btnCancelAppt.addEventListener('click', async () => {
-            if (confirm('Tem certeza que deseja cancelar esta consulta? A ação não pode ser desfeita.')) {
-                pillStatus1.classList.remove('ongoing');
-                pillStatus1.classList.add('cancelled');
-                pillStatus1.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Cancelada';
-                btnCancelAppt.style.display = 'none';
-            }
-        });
-    }
+    if (currentPage === 'dashboard.html') loadPatientDashboard();
 
     // Profile Masks
     const nascProfile = document.getElementById('nascimento-profile');
@@ -382,21 +562,75 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     let hasUnsavedChanges = false;
+    let isProfileEditing = false;
+    const profileContainer = document.querySelector('.profile-container');
     const profileInputs = document.querySelectorAll('#tab-perfil input, #tab-perfil select');
-    profileInputs.forEach(input => {
-        if (input.type !== 'file') {
-            input.addEventListener('input', () => hasUnsavedChanges = true);
-            input.addEventListener('change', () => hasUnsavedChanges = true);
-        }
-    });
-
+    const btnSaveProfile = document.getElementById('btn-save-profile');
     const avatarBtn = document.getElementById('profile-avatar-btn');
     const imageUpload = document.getElementById('profile-image-upload');
     const imagePreview = document.getElementById('profile-image-preview');
     const imageIcon = document.getElementById('profile-image-icon');
 
+    function setProfileEditing(editing) {
+        isProfileEditing = editing;
+        profileInputs.forEach(input => input.disabled = !editing);
+        profileContainer?.classList.toggle('profile-readonly', !editing);
+        if (btnSaveProfile) btnSaveProfile.textContent = editing ? 'Salvar alterações' : 'Alterar informações';
+    }
+
+    function populatePatientProfile(user) {
+        const values = {
+            'nome-profile': user.name,
+            'email-profile': user.email,
+            'nascimento-profile': user.birthDate,
+            'cep-profile': user.cep,
+            'cpf-profile': user.cpf,
+            'contato-profile': user.phone,
+            'sexo-profile': user.gender,
+            'convenio-profile': user.healthPlan
+        };
+
+        Object.entries(values).forEach(([id, value]) => {
+            const field = document.getElementById(id);
+            if (field) field.value = value ?? '';
+        });
+
+        const chronicDisease = document.getElementById('doenca-cronica-profile');
+        const continuousMedication = document.getElementById('medicamento-continuo-profile');
+        if (chronicDisease) chronicDisease.checked = user.hasChronicDisease === true;
+        if (continuousMedication) continuousMedication.checked = user.takesContinuousMedication === true;
+
+        if (imagePreview && imageIcon) {
+            if (user.avatarUrl) {
+                imagePreview.src = user.avatarUrl;
+                imagePreview.style.display = 'block';
+                imageIcon.style.display = 'none';
+            } else {
+                imagePreview.removeAttribute('src');
+                imagePreview.style.display = 'none';
+                imageIcon.style.display = 'block';
+            }
+        }
+
+        hasUnsavedChanges = false;
+        setProfileEditing(false);
+    }
+
+    profileInputs.forEach(input => {
+        input.addEventListener('input', () => {
+            if (isProfileEditing) hasUnsavedChanges = true;
+        });
+        input.addEventListener('change', () => {
+            if (isProfileEditing) hasUnsavedChanges = true;
+        });
+    });
+
+    setProfileEditing(false);
+
     if (avatarBtn && imageUpload) {
-        avatarBtn.addEventListener('click', () => imageUpload.click());
+        avatarBtn.addEventListener('click', () => {
+            if (isProfileEditing) imageUpload.click();
+        });
 
         imageUpload.addEventListener('change', function() {
             if (this.files && this.files[0]) {
@@ -419,20 +653,26 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnConfirmBooking) {
         btnConfirmBooking.addEventListener('click', async () => {
             const docSelect = document.getElementById('booking-doctor');
-            const daySelect = document.getElementById('booking-day');
+            const dateInput = document.getElementById('booking-date');
             const timeSelect = document.getElementById('booking-time');
 
-            if (!docSelect.value || !daySelect.value || !timeSelect.value) {
-                alert("Por favor, preencha todos os campos (dia, horário e médico) antes de confirmar.");
+            if (!docSelect.value || !dateInput.value || !timeSelect.value) {
+                alert("Por favor, preencha todos os campos (data, horário e médico) antes de confirmar.");
+                return;
+            }
+
+            const selectedDateTime = `${dateInput.value}T${timeSelect.value}`;
+            if (selectedDateTime < bookingWindowStart || selectedDateTime > bookingWindowEnd) {
+                alert('A consulta deve estar entre o momento atual e até um ano no futuro. Escolha outra data ou horário.');
+                await loadBookingWindow();
                 return;
             }
 
             const specialty = document.getElementById('booking-title').textContent.replace('Agendando: ', '');
             const doctor = docSelect.value;
-            const dayText = daySelect.options[daySelect.selectedIndex].text;
             const timeText = timeSelect.options[timeSelect.selectedIndex].text;
 
-            let savedAppointmentId;
+            let savedAppointment;
             try {
                 const response = await fetch('/api/appointments', {
                     method: 'POST',
@@ -440,7 +680,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify({
                         doctorName: doctor,
                         specialty: specialty,
-                        appointmentDate: dayText,
+                        appointmentDate: dateInput.value,
                         appointmentTime: timeText
                     })
                 });
@@ -449,74 +689,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (response.status === 401) window.location.href = 'login.html';
                     return;
                 }
-                const savedAppointment = await response.json();
-                savedAppointmentId = savedAppointment.id;
+                savedAppointment = await response.json();
             } catch (err) {
                 console.error('Falha ao realizar agendamento:', err);
                 alert('Não foi possível conectar ao servidor. Tente novamente.');
                 return;
             }
 
-            const newCard = document.createElement('div');
-            newCard.className = 'history-card';
-            newCard.dataset.appointmentId = savedAppointmentId;
-            newCard.setAttribute('data-search', `${doctor} ${specialty}`.toLowerCase());
-            newCard.innerHTML = `
-                <div class="history-card-top-right">Agendada</div>
-                <div class="history-row">
-                    <svg class="h-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                    <strong>${specialty}</strong>
-                </div>
-                <div class="history-row">
-                    <svg class="h-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                    <span>Unidade Central – Sala a definir</span>
-                </div>
-                <div class="history-row">
-                    <svg class="h-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                    <span>${doctor}</span>
-                </div>
-                <div class="history-row space-between">
-                    <div class="h-col">
-                        <svg class="h-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                        <span>${dayText} às ${timeText}</span>
-                    </div>
-                    <div class="h-actions">
-                        <span class="status-pill ongoing">
-                            <span class="dot"></span> Em andamento
-                        </span>
-                        <button class="btn-cancel-appt" title="Cancelar Consulta">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                        </button>
-                    </div>
-                </div>
-            `;
-
-            const cancelBtn = newCard.querySelector('.btn-cancel-appt');
-            cancelBtn.addEventListener('click', async function() {
-                const confirmCancel = confirm('Tem certeza que deseja cancelar esta consulta?');
-                if (confirmCancel) {
-                    const appointmentId = newCard.dataset.appointmentId;
-                    const response = await fetch(`/api/appointments/${appointmentId}/cancel`, { method: 'PUT' });
-                    if (!response.ok) {
-                        alert(await getErrorMessage(response, 'Não foi possível cancelar a consulta.'));
-                        return;
-                    }
-                    const pill = newCard.querySelector('.status-pill');
-                    pill.className = 'status-pill cancelled';
-                    pill.innerHTML = '<span class="dot"></span> Cancelada';
-                    this.style.display = 'none';
-                }
-            });
-
-            const historyList = document.getElementById('history-list');
-            let futurasLabel = document.getElementById('label-futuras');
-
-            if (futurasLabel) {
-                futurasLabel.style.display = 'block';
-                futurasLabel.insertAdjacentElement('afterend', newCard);
-            } else if (historyList) {
-                historyList.prepend(newCard);
-            }
+            const newCard = createAppointmentCard(savedAppointment);
+            document.getElementById('history-empty')?.remove();
+            historyListElement?.prepend(newCard);
 
             historyCards = document.querySelectorAll('.history-card');
             alert('Agendamento confirmado com sucesso! Você pode visualizar sua consulta na aba de Histórico.');
@@ -526,18 +708,26 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('specialties-section').style.display = 'grid';
 
             docSelect.value = '';
-            daySelect.value = '';
-            timeSelect.value = '';
+            dateInput.value = '';
+            populateAvailableTimes();
         });
     }
 
     // ----------------------------------------------------
     // Save Profile (API + UI update)
     // ----------------------------------------------------
-    const btnSaveProfile = document.getElementById('btn-save-profile');
     if (btnSaveProfile) {
         btnSaveProfile.addEventListener('click', async () => {
-            if (!hasUnsavedChanges) return;
+            if (!isProfileEditing) {
+                setProfileEditing(true);
+                document.getElementById('nome-profile')?.focus();
+                return;
+            }
+
+            if (!hasUnsavedChanges) {
+                setProfileEditing(false);
+                return;
+            }
 
             const storedUser = JSON.parse(localStorage.getItem('checkupUser') || '{}');
             const userId = storedUser.id;
@@ -552,6 +742,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const cepInputProf = document.getElementById('cep-profile');
             const cpfInputProf = document.getElementById('cpf-profile');
             const phoneInputProf = document.getElementById('contato-profile');
+            const genderInput = document.getElementById('sexo-profile');
+            const healthPlanInput = document.getElementById('convenio-profile');
+            const chronicDiseaseInput = document.getElementById('doenca-cronica-profile');
+            const continuousMedicationInput = document.getElementById('medicamento-continuo-profile');
+
+            if (!nameInput?.value.trim() || !emailInput?.value.trim()) {
+                alert('Nome e e-mail são obrigatórios.');
+                return;
+            }
 
             try {
                 const response = await fetch(`/api/users/${userId}`, {
@@ -564,26 +763,32 @@ document.addEventListener('DOMContentLoaded', () => {
                         cep: cepInputProf ? cepInputProf.value : undefined,
                         cpf: cpfInputProf ? cpfInputProf.value : undefined,
                         phone: phoneInputProf ? phoneInputProf.value : undefined,
-                        avatarUrl: imagePreview ? imagePreview.src : undefined
+                        gender: genderInput ? genderInput.value : undefined,
+                        healthPlan: healthPlanInput ? healthPlanInput.value : undefined,
+                        hasChronicDisease: chronicDiseaseInput ? chronicDiseaseInput.checked : false,
+                        takesContinuousMedication: continuousMedicationInput ? continuousMedicationInput.checked : false,
+                        avatarUrl: imagePreview?.getAttribute('src') || ''
                     })
                 });
                 if (!response.ok) {
                     alert(await getErrorMessage(response, 'Não foi possível atualizar o perfil.'));
                     return;
                 }
+                const updatedUser = await response.json();
+                localStorage.setItem('checkupUser', JSON.stringify(updatedUser));
+                if (historyPatientName) historyPatientName.textContent = updatedUser.name;
+                populatePatientProfile(updatedUser);
             } catch (err) {
                 console.error('Falha ao atualizar perfil:', err);
                 alert('Não foi possível conectar ao servidor. Tente novamente.');
                 return;
             }
 
-            const originalText = btnSaveProfile.textContent;
             btnSaveProfile.textContent = 'Informações atualizadas!';
             btnSaveProfile.style.backgroundColor = '#1D6B35';
-            hasUnsavedChanges = false;
 
             setTimeout(() => {
-                btnSaveProfile.textContent = originalText;
+                btnSaveProfile.textContent = 'Alterar informações';
                 btnSaveProfile.style.backgroundColor = '';
             }, 3000);
         });
