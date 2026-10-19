@@ -233,6 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const timeSelect = document.getElementById('booking-time');
     const dateInput = document.getElementById('booking-date');
+    const doctorSelect = document.getElementById('booking-doctor');
     let bookingWindowStart = '';
     let bookingWindowEnd = '';
 
@@ -258,25 +259,19 @@ document.addEventListener('DOMContentLoaded', () => {
         dateInput.max = bookingWindowEnd.slice(0, 10);
     }
 
-    function populateAvailableTimes() {
+    async function populateAvailableTimes() {
         if (!timeSelect) return;
         timeSelect.innerHTML = '<option value="" disabled selected>Selecione o horário</option>';
-        if (!dateInput?.value || !bookingWindowStart || !bookingWindowEnd) return;
-
-        let availableCount = 0;
-        for (let i = 9; i <= 23; i++) {
-            const hour = `${String(i).padStart(2, '0')}:00`;
-            const appointmentDateTime = `${dateInput.value}T${hour}`;
-            if (appointmentDateTime < bookingWindowStart || appointmentDateTime > bookingWindowEnd) continue;
-
-            const option = document.createElement('option');
-            option.value = hour;
-            option.textContent = hour;
-            timeSelect.appendChild(option);
-            availableCount++;
-        }
-
-        if (availableCount === 0) {
+        if (!dateInput?.value || !doctorSelect?.value || !bookingWindowStart || !bookingWindowEnd) return;
+        timeSelect.innerHTML = '<option value="" disabled selected>Carregando horários...</option>';
+        try {
+            const response = await fetch(`/api/doctors/${doctorSelect.value}/available-times?date=${dateInput.value}`);
+            if (!response.ok) throw new Error();
+            const times = await response.json();
+            timeSelect.innerHTML = '<option value="" disabled selected>Selecione o horário</option>';
+            times.forEach(hour => timeSelect.insertAdjacentHTML('beforeend', `<option value="${hour}">${hour}</option>`));
+            if (!times.length) timeSelect.innerHTML = '<option value="" disabled selected>Nenhum horário disponível nesta data</option>';
+        } catch (error) {
             timeSelect.innerHTML = '<option value="" disabled selected>Nenhum horário disponível nesta data</option>';
         }
     }
@@ -298,13 +293,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     dateInput?.addEventListener('change', populateAvailableTimes);
+    doctorSelect?.addEventListener('change', populateAvailableTimes);
     if (dateInput && timeSelect) loadBookingWindow();
 
     const agendaHeader = document.getElementById('agenda-header');
     const specialtiesSection = document.getElementById('specialties-section');
     const bookingSection = document.getElementById('booking-section');
     const bookingTitle = document.getElementById('booking-title');
-    const doctorSelect = document.getElementById('booking-doctor');
     const btnBackAgenda = document.getElementById('btn-back-agenda');
 
     if (specialtiesSection && bookingSection) {
@@ -323,18 +318,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (doctors.length > 0) {
                             doctors.forEach(doc => {
                                 let option = document.createElement('option');
-                                option.value = doc.name;
+                                option.value = doc.id;
+                                option.dataset.name = doc.name;
                                 option.textContent = doc.name;
                                 doctorSelect.appendChild(option);
                             });
-                        } else {
-                            fallbackDoctors(specialtyName);
                         }
-                    } else {
-                        fallbackDoctors(specialtyName);
                     }
                 } catch (e) {
-                    fallbackDoctors(specialtyName);
+                    doctorSelect.innerHTML = '<option value="" disabled selected>Não foi possível carregar médicos</option>';
                 }
 
                 agendaHeader.style.display = 'none';
@@ -353,16 +345,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 specialtiesSection.innerHTML = Object.keys(doctorsDB)
                     .map(name => `<button class="specialty-btn">${escapeHtml(name)}</button>`).join('');
             });
-    }
-
-    function fallbackDoctors(specialtyName) {
-        const doctors = doctorsDB[specialtyName] || ["Dr. Plantonista 1", "Dra. Plantonista 2"];
-        doctors.forEach(doc => {
-            let option = document.createElement('option');
-            option.value = doc;
-            option.textContent = doc;
-            doctorSelect.appendChild(option);
-        });
     }
 
     if (btnBackAgenda) {
@@ -429,6 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${appointment.status === 'AGENDADO' ? '<button class="btn-cancel-appt" title="Cancelar Consulta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>' : ''}
                 </div>
             </div>
+            ${appointment.status === 'CONCLUIDO' ? `<div class="medical-documents" data-patient-documents="${appointment.id}"><span class="documents-loading">Buscando documentos médicos...</span></div>` : ''}
         `;
 
         const cancelButton = card.querySelector('.btn-cancel-appt');
@@ -449,6 +432,24 @@ document.addEventListener('DOMContentLoaded', () => {
         return card;
     }
 
+    async function loadPatientDocuments(container) {
+        const appointmentId = container.dataset.patientDocuments;
+        try {
+            const response = await fetch(`/api/medical-documents/appointments/${appointmentId}`);
+            if (!response.ok) throw new Error('Não foi possível carregar os documentos.');
+            const documents = await response.json();
+            container.innerHTML = documents.length ? `
+                <strong class="documents-title">Documentos médicos</strong>
+                <div class="document-links">${documents.map(document => `
+                    <a class="medical-document-link" href="${document.downloadUrl}" target="_blank" rel="noopener">
+                        <span>${escapeHtml(({ATESTADO:'Atestado',RECEITA:'Receita',EXAME:'Exame',OUTRO:'Documento'})[document.type] || document.type)}</span>
+                        <strong>${escapeHtml(document.title)}</strong>
+                    </a>`).join('')}</div>` : '';
+        } catch (error) {
+            container.innerHTML = '<span class="documents-error">Não foi possível carregar os documentos.</span>';
+        }
+    }
+
     function renderHistory(appointments) {
         if (!historyListElement) return;
         historyListElement.innerHTML = '';
@@ -457,6 +458,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         appointments.forEach(appointment => historyListElement.appendChild(createAppointmentCard(appointment)));
+        historyListElement.querySelectorAll('[data-patient-documents]').forEach(loadPatientDocuments);
     }
 
     async function loadPatientDashboard() {
@@ -669,7 +671,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const specialty = document.getElementById('booking-title').textContent.replace('Agendando: ', '');
-            const doctor = docSelect.value;
+            const doctorId = Number(docSelect.value);
+            const doctor = docSelect.options[docSelect.selectedIndex].dataset.name;
             const timeText = timeSelect.options[timeSelect.selectedIndex].text;
 
             let savedAppointment;
@@ -678,6 +681,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
+                        doctorId: doctorId,
                         doctorName: doctor,
                         specialty: specialty,
                         appointmentDate: dateInput.value,

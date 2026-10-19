@@ -341,6 +341,37 @@
   position: relative;
 }
 
+.medical-documents {
+  border-top: 1px solid var(--border-color);
+  padding-top: 14px;
+}
+
+.documents-title {
+  display: block;
+  color: #1D6B35;
+  font-size: 13px;
+  margin-bottom: 9px;
+}
+
+.document-links { display: grid; gap: 8px; }
+
+.medical-document-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 13px;
+  border-radius: 12px;
+  background: #eef8f0;
+  color: #174f29;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.medical-document-link:hover { background: #dff1e3; }
+.medical-document-link span { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+.documents-loading,.documents-error { color: #778079; font-size: 12px; }
+
 .history-card-top-right {
   position: absolute;
   top: 24px;

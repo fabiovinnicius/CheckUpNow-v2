@@ -1,9 +1,14 @@
 package com.checkupnow.controller;
 
 import com.checkupnow.model.Appointment;
+import com.checkupnow.dto.AppointmentResponse;
 import com.checkupnow.model.User;
+import com.checkupnow.model.Doctor;
 import com.checkupnow.repository.AppointmentRepository;
+import com.checkupnow.repository.DoctorRepository;
 import com.checkupnow.repository.UserRepository;
+import com.checkupnow.service.DoctorScheduleService;
+import com.checkupnow.service.AppointmentStatusService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,10 +34,18 @@ public class AppointmentController {
 
     private final AppointmentRepository appointmentRepository;
     private final UserRepository userRepository;
+    private final DoctorRepository doctorRepository;
+    private final DoctorScheduleService scheduleService;
+    private final AppointmentStatusService statusService;
 
-    public AppointmentController(AppointmentRepository appointmentRepository, UserRepository userRepository) {
+    public AppointmentController(AppointmentRepository appointmentRepository, UserRepository userRepository,
+                                 DoctorRepository doctorRepository, DoctorScheduleService scheduleService,
+                                 AppointmentStatusService statusService) {
         this.appointmentRepository = appointmentRepository;
         this.userRepository = userRepository;
+        this.doctorRepository = doctorRepository;
+        this.scheduleService = scheduleService;
+        this.statusService = statusService;
     }
 
     @GetMapping("/window")
@@ -57,7 +70,8 @@ public class AppointmentController {
         }
 
         List<Appointment> appointments = appointmentRepository.findByUserIdOrderByCreatedAtDesc(userId);
-        return ResponseEntity.ok(appointments);
+        return ResponseEntity.ok(statusService.refreshCompleted(appointments).stream()
+                .map(AppointmentResponse::from).toList());
     }
 
     @PostMapping
@@ -72,13 +86,13 @@ public class AppointmentController {
             return ResponseEntity.badRequest().body(Map.of("message", "Usuário não encontrado."));
         }
 
-        String doctorName = (String) payload.get("doctorName");
-        String specialty = (String) payload.get("specialty");
+        Long doctorId = payload.get("doctorId") instanceof Number number ? number.longValue() : null;
+        Doctor selectedDoctor = doctorId == null ? null : doctorRepository.findById(doctorId).orElse(null);
         String appointmentDate = (String) payload.get("appointmentDate");
         String appointmentTime = (String) payload.get("appointmentTime");
         String observation = (String) payload.getOrDefault("observation", "");
 
-        if (doctorName == null || specialty == null || appointmentDate == null || appointmentTime == null) {
+        if (doctorId == null || selectedDoctor == null || appointmentDate == null || appointmentTime == null) {
             return ResponseEntity.badRequest().body(Map.of("message", "Todos os campos do agendamento são obrigatórios."));
         }
 
@@ -102,23 +116,20 @@ public class AppointmentController {
 
         String displayDate = parsedDate.format(DISPLAY_DATE_FORMAT);
         String displayTime = parsedTime.format(DateTimeFormatter.ofPattern("HH:mm"));
-        if (appointmentRepository.existsByDoctorNameAndAppointmentDateAndAppointmentTimeAndStatusNot(
-                doctorName, displayDate, displayTime, "CANCELADO")) {
+        if (!scheduleService.isAvailable(selectedDoctor, parsedDate, parsedTime)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("message", "Este horário não está disponível na agenda do médico."));
+        }
+        if (appointmentRepository.existsByDoctorIdAndAppointmentDateAndAppointmentTimeAndStatusNot(
+                selectedDoctor.getId(), displayDate, displayTime, "CANCELADO")) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("message", "Este médico já possui uma consulta neste horário."));
         }
 
-        Appointment appointment = new Appointment(
-                userOpt.get(),
-                doctorName,
-                specialty,
-                displayDate,
-                displayTime,
-                observation
-        );
+        Appointment appointment = new Appointment(userOpt.get(), selectedDoctor, displayDate, displayTime, observation);
         Appointment saved = appointmentRepository.save(appointment);
 
-        return ResponseEntity.ok(saved);
+        return ResponseEntity.ok(AppointmentResponse.from(saved));
     }
 
     private LocalDate parseAppointmentDate(String value) {
@@ -141,7 +152,7 @@ public class AppointmentController {
             }
             appointment.setStatus("CANCELADO");
             Appointment updated = appointmentRepository.save(appointment);
-            return ResponseEntity.ok((Object) updated);
+            return ResponseEntity.ok((Object) AppointmentResponse.from(updated));
         }).orElse(ResponseEntity.notFound().build());
     }
 }

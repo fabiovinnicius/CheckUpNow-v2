@@ -3,7 +3,9 @@ package com.checkupnow.config;
 import com.checkupnow.model.Doctor;
 import com.checkupnow.model.Specialty;
 import com.checkupnow.model.User;
+import com.checkupnow.model.DoctorWorkingHour;
 import com.checkupnow.repository.DoctorRepository;
+import com.checkupnow.repository.DoctorWorkingHourRepository;
 import com.checkupnow.repository.SpecialtyRepository;
 import com.checkupnow.repository.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -14,6 +16,8 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.time.DayOfWeek;
+import java.time.LocalTime;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
@@ -21,13 +25,15 @@ public class DataInitializer implements CommandLineRunner {
     private final DoctorRepository doctorRepository;
     private final SpecialtyRepository specialtyRepository;
     private final UserRepository userRepository;
+    private final DoctorWorkingHourRepository workingHourRepository;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public DataInitializer(DoctorRepository doctorRepository, SpecialtyRepository specialtyRepository,
-                           UserRepository userRepository) {
+                           UserRepository userRepository, DoctorWorkingHourRepository workingHourRepository) {
         this.doctorRepository = doctorRepository;
         this.specialtyRepository = specialtyRepository;
         this.userRepository = userRepository;
+        this.workingHourRepository = workingHourRepository;
     }
 
     @Override
@@ -67,6 +73,37 @@ public class DataInitializer implements CommandLineRunner {
                     doctorRepository.save(doc);
                 }
             }
+        }
+
+        doctorRepository.findAll().forEach(doctor -> {
+            if (workingHourRepository.findByDoctorIdOrderByDayOfWeekAsc(doctor.getId()).isEmpty()) {
+                for (DayOfWeek day : List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
+                        DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)) {
+                    workingHourRepository.save(new DoctorWorkingHour(
+                            doctor, day, LocalTime.of(9, 0), LocalTime.of(18, 0)));
+                }
+            }
+        });
+
+        User doctorUser = userRepository.findByEmail("medico@checkupnow.com").orElseGet(() -> {
+            User created = new User("Dr. Anderson teste", "medico@checkupnow.com",
+                    passwordEncoder.encode("medico123"));
+            created.setRole(User.ROLE_DOCTOR);
+            return userRepository.save(created);
+        });
+        doctorUser.setRole(User.ROLE_DOCTOR);
+        if (!passwordEncoder.matches("medico123", doctorUser.getPassword())) {
+            doctorUser.setPassword(passwordEncoder.encode("medico123"));
+        }
+        userRepository.save(doctorUser);
+        if (doctorRepository.findByUserId(doctorUser.getId()).isEmpty()) {
+            doctorRepository.findByName("Dr. Anderson teste").stream()
+                    .filter(doctor -> doctor.getUser() == null)
+                    .findFirst()
+                    .ifPresent(doctor -> {
+                        doctor.setUser(doctorUser);
+                        doctorRepository.save(doctor);
+                    });
         }
 
         userRepository.findAll().stream()

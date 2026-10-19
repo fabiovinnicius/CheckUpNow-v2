@@ -1,0 +1,12 @@
+.appointment-record { align-items: flex-start; }
+.appointment-info { flex: 1; min-width: 0; }
+.document-list { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+.document-link { background: #edf8f0; color: #1d6b35; border-radius: 9px; padding: 7px 9px; text-decoration: none; font-size: 11px; font-weight: 700; }
+.document-link:hover { background: #dff1e3; }
+.document-empty { color: #7a837c; font-size: 11px; }
+.medical-upload-form { display: grid; grid-template-columns: 120px 1fr minmax(190px, 1.3fr) auto; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #e4eae5; }
+.medical-upload-form select,.medical-upload-form input { min-height: 38px; border: 1px solid #a9b3ab; border-radius: 9px; padding: 7px 9px; font: inherit; font-size: 12px; min-width: 0; background: white; }
+.medical-upload-form input[type=file] { padding: 7px; }
+.upload-button { width: auto; min-height: 38px; padding: 7px 12px; font-size: 12px; }
+.upload-button:disabled { opacity: .55; cursor: wait; }
+@media (max-width: 720px) { .medical-upload-form { grid-template-columns: 1fr; } }

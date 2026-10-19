@@ -3,10 +3,12 @@ package com.checkupnow.controller;
 import com.checkupnow.model.User;
 import com.checkupnow.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.web.csrf.CsrfToken;
 
 import java.util.Map;
 import java.util.Optional;
@@ -22,8 +24,13 @@ public class AuthController {
         this.userRepository = userRepository;
     }
 
+    @GetMapping("/csrf")
+    public ResponseEntity<?> csrf(CsrfToken csrfToken) {
+        return ResponseEntity.ok(Map.of("token", csrfToken.getToken()));
+    }
+
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody Map<String, String> payload, HttpSession session) {
+    public ResponseEntity<?> register(@RequestBody Map<String, String> payload, HttpServletRequest request) {
         String name = normalize(payload.get("name"));
         String email = normalizeEmail(payload.get("email"));
         String password = payload.get("password");
@@ -39,12 +46,12 @@ public class AuthController {
         User user = new User(name, email, passwordEncoder.encode(password));
         User savedUser = userRepository.save(user);
 
-        session.setAttribute("userId", savedUser.getId());
+        establishSession(request, savedUser.getId());
         return ResponseEntity.ok(savedUser);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> payload, HttpSession session) {
+    public ResponseEntity<?> login(@RequestBody Map<String, String> payload, HttpServletRequest request) {
         String email = normalizeEmail(payload.get("email"));
         String password = payload.get("password");
 
@@ -56,7 +63,7 @@ public class AuthController {
 
         if (userOpt.isPresent() && passwordEncoder.matches(password, userOpt.get().getPassword())) {
             User user = userOpt.get();
-            session.setAttribute("userId", user.getId());
+            establishSession(request, user.getId());
             return ResponseEntity.ok(user);
         }
 
@@ -89,5 +96,11 @@ public class AuthController {
     private String normalizeEmail(String value) {
         String normalized = normalize(value);
         return normalized == null ? null : normalized.toLowerCase();
+    }
+
+    private void establishSession(HttpServletRequest request, Long userId) {
+        HttpSession session = request.getSession(true);
+        request.changeSessionId();
+        session.setAttribute("userId", userId);
     }
 }

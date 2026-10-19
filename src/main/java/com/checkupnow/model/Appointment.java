@@ -1,5 +1,6 @@
 package com.checkupnow.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -14,6 +15,11 @@ public class Appointment {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "doctor_id")
+    @JsonIgnoreProperties("user")
+    private Doctor doctor;
 
     @Column(nullable = false)
     private String doctorName;
@@ -48,6 +54,11 @@ public class Appointment {
         this.observation = observation;
     }
 
+    public Appointment(User user, Doctor doctor, String appointmentDate, String appointmentTime, String observation) {
+        this(user, doctor.getName(), doctor.getSpecialty(), appointmentDate, appointmentTime, observation);
+        this.doctor = doctor;
+    }
+
     public Long getId() {
         return id;
     }
@@ -62,6 +73,18 @@ public class Appointment {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public Doctor getDoctor() {
+        return doctor;
+    }
+
+    public void setDoctor(Doctor doctor) {
+        this.doctor = doctor;
+        if (doctor != null) {
+            this.doctorName = doctor.getName();
+            this.specialty = doctor.getSpecialty();
+        }
     }
 
     public String getDoctorName() {

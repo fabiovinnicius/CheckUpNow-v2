@@ -3,6 +3,7 @@ package com.checkupnow.controller;
 import com.checkupnow.model.User;
 import com.checkupnow.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -22,7 +23,7 @@ public class AdminAuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> payload, HttpSession session) {
+    public ResponseEntity<?> login(@RequestBody Map<String, String> payload, HttpServletRequest request) {
         String email = payload.get("email") == null ? "" : payload.get("email").trim().toLowerCase();
         String password = payload.get("password");
         var admin = userRepository.findByEmail(email);
@@ -31,6 +32,8 @@ public class AdminAuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("message", "Credenciais administrativas inválidas."));
         }
+        HttpSession session = request.getSession(true);
+        request.changeSessionId();
         session.setAttribute("userId", admin.get().getId());
         return ResponseEntity.ok(admin.get());
     }

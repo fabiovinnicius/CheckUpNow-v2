@@ -18,6 +18,10 @@ public class Doctor {
 
     private String crm;
 
+    @OneToOne
+    @JoinColumn(name = "user_id", unique = true)
+    private User user;
+
     public Doctor() {
     }
 
@@ -57,5 +61,13 @@ public class Doctor {
 
     public void setCrm(String crm) {
         this.crm = crm;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }

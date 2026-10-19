@@ -14,5 +14,12 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<Appointment> findAllByOrderByCreatedAtDesc();
     boolean existsByDoctorNameAndAppointmentDateAndAppointmentTimeAndStatusNot(
             String doctorName, String appointmentDate, String appointmentTime, String status);
+    boolean existsByDoctorIdAndAppointmentDateAndAppointmentTimeAndStatusNot(
+            Long doctorId, String appointmentDate, String appointmentTime, String status);
+    boolean existsByDoctorId(Long doctorId);
     void deleteByUserId(Long userId);
+    List<Appointment> findByDoctorNameOrderByCreatedAtDesc(String doctorName);
+    List<Appointment> findByDoctorNameAndStatusNot(String doctorName, String status);
+    List<Appointment> findByDoctorIdOrderByCreatedAtDesc(Long doctorId);
+    List<Appointment> findByDoctorIdAndStatusNot(Long doctorId, String status);
 }
