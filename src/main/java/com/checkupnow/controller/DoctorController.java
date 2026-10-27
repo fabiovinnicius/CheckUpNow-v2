@@ -44,6 +44,6 @@ public class DoctorController {
 
     private Map<String, Object> publicDoctor(Doctor doctor) {
         return Map.of("id", doctor.getId(), "name", doctor.getName(), "specialty", doctor.getSpecialty(),
-                "crm", doctor.getCrm() == null ? "" : doctor.getCrm());
+                "specialties", doctor.getSpecialties(), "crm", doctor.getCrm() == null ? "" : doctor.getCrm());
     }
 }

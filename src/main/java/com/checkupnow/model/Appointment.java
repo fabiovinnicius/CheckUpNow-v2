@@ -59,6 +59,12 @@ public class Appointment {
         this.doctor = doctor;
     }
 
+    public Appointment(User user, Doctor doctor, String specialty, String appointmentDate,
+                       String appointmentTime, String observation) {
+        this(user, doctor.getName(), specialty, appointmentDate, appointmentTime, observation);
+        this.doctor = doctor;
+    }
+
     public Long getId() {
         return id;
     }

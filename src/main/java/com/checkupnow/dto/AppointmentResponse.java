@@ -27,6 +27,7 @@ public record AppointmentResponse(
             doctor.put("id", appointment.getDoctor().getId());
             doctor.put("name", appointment.getDoctor().getName());
             doctor.put("specialty", appointment.getDoctor().getSpecialty());
+            doctor.put("specialties", appointment.getDoctor().getSpecialties());
             doctor.put("crm", appointment.getDoctor().getCrm());
         }
         return new AppointmentResponse(appointment.getId(), patient, doctor, appointment.getDoctorName(),

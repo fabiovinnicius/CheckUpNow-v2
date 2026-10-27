@@ -39,8 +39,12 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
         doctorRepository.findByName("Dr. Raquel teste").forEach(doctor -> {
-            doctor.setSpecialty("Dermatologia");
-            doctorRepository.save(doctor);
+            if (!doctor.getSpecialties().contains("Dermatologia")) {
+                List<String> specialties = new java.util.ArrayList<>(doctor.getSpecialties());
+                specialties.add("Dermatologia");
+                doctor.setSpecialties(specialties);
+                doctorRepository.save(doctor);
+            }
         });
         doctorRepository.deleteAll(doctorRepository.findByName("Dra. Raquel teste"));
 
@@ -68,7 +72,7 @@ public class DataInitializer implements CommandLineRunner {
         for (Map.Entry<String, List<String>> entry : doctorsDB.entrySet()) {
             String specialty = entry.getKey();
             for (String name : entry.getValue()) {
-                if (!doctorRepository.existsByNameAndSpecialty(name, specialty)) {
+                if (!doctorRepository.existsByNameIgnoreCase(name)) {
                     Doctor doc = new Doctor(name, specialty, "CRM/SP " + (crmCount++));
                     doctorRepository.save(doc);
                 }

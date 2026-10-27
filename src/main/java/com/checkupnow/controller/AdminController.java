@@ -91,6 +91,11 @@ public class AdminController {
     public ResponseEntity<?> deleteSpecialty(@PathVariable Long id, HttpSession session) {
         if (!isAdmin(session)) return forbidden();
         if (!specialtyRepository.existsById(id)) return ResponseEntity.notFound().build();
+        Specialty specialty = specialtyRepository.findById(id).orElseThrow();
+        if (doctorRepository.existsBySpecialty(specialty.getName())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+                    "message", "Esta especialidade está vinculada a um ou mais médicos."));
+        }
         specialtyRepository.deleteById(id);
         return ResponseEntity.ok(Map.of("message", "Tipo de consulta removido."));
     }
@@ -129,27 +134,27 @@ public class AdminController {
     @GetMapping("/doctors")
     public ResponseEntity<?> doctors(HttpSession session) {
         if (!isAdmin(session)) return forbidden();
-        return ResponseEntity.ok(doctorRepository.findAll());
+        return ResponseEntity.ok(doctorRepository.findAll().stream().map(this::doctorView).toList());
     }
 
     @PostMapping("/doctors")
     @Transactional
-    public ResponseEntity<?> createDoctor(@RequestBody Map<String, String> payload, HttpSession session) {
+    public ResponseEntity<?> createDoctor(@RequestBody Map<String, Object> payload, HttpSession session) {
         if (!isAdmin(session)) return forbidden();
-        String name = normalize(payload.get("name"));
-        String specialty = normalize(payload.get("specialty"));
-        String crm = normalize(payload.get("crm"));
-        String email = normalize(payload.get("email"));
-        String password = payload.get("password");
-        if (name == null || specialty == null || crm == null || email == null
+        String name = normalize((String) payload.get("name"));
+        List<String> specialties = specialtiesFrom(payload);
+        String crm = normalize((String) payload.get("crm"));
+        String email = normalize((String) payload.get("email"));
+        String password = (String) payload.get("password");
+        if (name == null || specialties.isEmpty() || crm == null || email == null
                 || password == null || password.length() < 8) {
             return ResponseEntity.badRequest().body(Map.of(
-                    "message", "Preencha nome, especialidade, CRM, e-mail e uma senha com ao menos 8 caracteres."));
+                    "message", "Preencha nome, ao menos uma especialidade, CRM, e-mail e uma senha com ao menos 8 caracteres."));
         }
-        if (!specialtyRepository.existsByNameIgnoreCase(specialty)) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Selecione um tipo de consulta cadastrado."));
+        if (!validSpecialties(specialties)) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Selecione somente especialidades cadastradas."));
         }
-        if (doctorRepository.existsByNameAndSpecialty(name, specialty)) {
+        if (doctorRepository.existsByNameIgnoreCase(name)) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", "Este médico já está cadastrado."));
         }
         email = email.toLowerCase(Locale.ROOT);
@@ -160,13 +165,50 @@ public class AdminController {
         User account = new User(name, email, passwordEncoder.encode(password));
         account.setRole(User.ROLE_DOCTOR);
         account = userRepository.save(account);
-        Doctor doctor = new Doctor(name, specialty, crm);
+        Doctor doctor = new Doctor(name, specialties.getFirst(), crm);
+        doctor.setSpecialties(specialties);
         doctor.setUser(account);
         doctor = doctorRepository.save(doctor);
         List<Map<String, String>> defaultHours = List.of(
                 hour("MONDAY"), hour("TUESDAY"), hour("WEDNESDAY"), hour("THURSDAY"), hour("FRIDAY"));
         scheduleService.replaceWorkingHours(doctor, defaultHours);
-        return ResponseEntity.status(HttpStatus.CREATED).body(doctor);
+        return ResponseEntity.status(HttpStatus.CREATED).body(doctorView(doctor));
+    }
+
+    @PutMapping("/doctors/{id}")
+    @Transactional
+    public ResponseEntity<?> updateDoctor(@PathVariable Long id, @RequestBody Map<String, Object> payload,
+                                          HttpSession session) {
+        if (!isAdmin(session)) return forbidden();
+        Doctor doctor = doctorRepository.findById(id).orElse(null);
+        if (doctor == null) return ResponseEntity.notFound().build();
+        String name = normalize((String) payload.get("name"));
+        String crm = normalize((String) payload.get("crm"));
+        String email = normalize((String) payload.get("email"));
+        List<String> specialties = specialtiesFrom(payload);
+        if (name == null || crm == null || specialties.isEmpty() || !validSpecialties(specialties)) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "message", "Informe nome, CRM e ao menos uma especialidade cadastrada."));
+        }
+        doctor.setName(name);
+        doctor.setCrm(crm);
+        doctor.setSpecialties(specialties);
+        List<Appointment> linkedAppointments = appointmentRepository.findByDoctorIdOrderByCreatedAtDesc(id);
+        linkedAppointments.forEach(appointment -> appointment.setDoctorName(name));
+        appointmentRepository.saveAll(linkedAppointments);
+        User account = doctor.getUser();
+        if (account != null) {
+            if (email == null) return ResponseEntity.badRequest().body(Map.of("message", "Informe o e-mail de acesso."));
+            email = email.toLowerCase(Locale.ROOT);
+            Optional<User> emailOwner = userRepository.findByEmail(email);
+            if (emailOwner.isPresent() && !emailOwner.get().getId().equals(account.getId())) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", "E-mail já cadastrado."));
+            }
+            account.setName(name);
+            account.setEmail(email);
+            userRepository.save(account);
+        }
+        return ResponseEntity.ok(doctorView(doctorRepository.save(doctor)));
     }
 
     @DeleteMapping("/doctors/{id}")
@@ -280,7 +322,9 @@ public class AdminController {
         Doctor selectedDoctor = doctorId == null ? null : doctorRepository.findById(doctorId).orElse(null);
         String dateValue = normalize((String) payload.get("appointmentDate"));
         String timeValue = normalize((String) payload.get("appointmentTime"));
-        if (patientId == null || doctorId == null || selectedDoctor == null || dateValue == null || timeValue == null) {
+        String specialty = normalize((String) payload.get("specialty"));
+        if (patientId == null || doctorId == null || selectedDoctor == null || dateValue == null || timeValue == null
+                || specialty == null || !selectedDoctor.getSpecialties().contains(specialty)) {
             return ResponseEntity.badRequest().body(Map.of("message", "Preencha paciente, consulta, médico, data e horário."));
         }
         var patient = userRepository.findById(patientId)
@@ -310,7 +354,7 @@ public class AdminController {
                 selectedDoctor.getId(), displayDate, displayTime, "CANCELADO")) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", "O médico já possui uma consulta neste horário."));
         }
-        Appointment appointment = new Appointment(patient.get(), selectedDoctor, displayDate, displayTime,
+        Appointment appointment = new Appointment(patient.get(), selectedDoctor, specialty, displayDate, displayTime,
                 normalize((String) payload.get("observation")));
         return ResponseEntity.ok(AppointmentResponse.from(appointmentRepository.save(appointment)));
     }
@@ -336,6 +380,32 @@ public class AdminController {
 
     private String normalize(String value) {
         return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    private List<String> specialtiesFrom(Map<String, Object> payload) {
+        Object values = payload.get("specialties");
+        if (values instanceof Collection<?> collection) {
+            return collection.stream().filter(String.class::isInstance).map(String.class::cast)
+                    .map(this::normalize).filter(Objects::nonNull).distinct().toList();
+        }
+        String single = payload.get("specialty") instanceof String value ? normalize(value) : null;
+        return single == null ? List.of() : List.of(single);
+    }
+
+    private boolean validSpecialties(List<String> specialties) {
+        return specialties.stream().allMatch(specialtyRepository::existsByNameIgnoreCase);
+    }
+
+    private Map<String, Object> doctorView(Doctor doctor) {
+        Map<String, Object> view = new LinkedHashMap<>();
+        view.put("id", doctor.getId());
+        view.put("name", doctor.getName());
+        view.put("specialty", doctor.getSpecialty());
+        view.put("specialties", doctor.getSpecialties());
+        view.put("crm", doctor.getCrm() == null ? "" : doctor.getCrm());
+        view.put("user", doctor.getUser() == null ? null : Map.of(
+                "id", doctor.getUser().getId(), "email", doctor.getUser().getEmail()));
+        return view;
     }
 
     private Long numberAsLong(Object value) {

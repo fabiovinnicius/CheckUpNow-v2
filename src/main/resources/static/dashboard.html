@@ -10,12 +10,12 @@
     
     <link rel="stylesheet" href="css/global.css">
     <link rel="stylesheet" href="css/index.css">
-    <link rel="stylesheet" href="css/dashboard.css?v=20261015-2">
-    <link rel="stylesheet" href="css/medical-documents.css?v=20261019-1">
+    <link rel="stylesheet" href="css/dashboard.css?v=20261027-1">
 </head>
 <body>
     <div class="bg-wave bg-wave-tl"></div>
     <div class="bg-wave bg-wave-br"></div>
+    <div id="app-notifications" class="app-notification" role="status" aria-live="polite"></div>
 
     <div class="card card-dashboard">
         
@@ -29,36 +29,48 @@
                 <p class="specialties-loading">Carregando tipos de consulta...</p>
             </div>
 
-            <div class="booking-section" id="booking-section" style="display: none;">
+            <div class="booking-section" id="booking-section" hidden>
                 <button type="button" class="btn-back" id="btn-back-agenda">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                     Voltar para especialidades
                 </button>
 
+                <span class="booking-eyebrow">Nova consulta</span>
                 <h2 id="booking-title" class="booking-title">Agendando...</h2>
                 
-                <form class="booking-form" action="#" method="GET">
+                <form class="booking-form" id="booking-form">
                     <div class="input-group">
-                        <label for="booking-date">Data da consulta</label>
-                        <input type="date" id="booking-date" class="booking-date-input" required>
-                    </div>
-
-                    <div class="input-group">
-                        <label>Horário Disponível</label>
-                        <select id="booking-time" required>
-                            <option value="" disabled selected>Selecione um horário</option>
-                        </select>
-                    </div>
-
-                    <div class="input-group">
-                        <label>Médico Especialista</label>
-                        <select id="booking-doctor" required>
+                        <label for="booking-doctor">Médico especialista</label>
+                        <select id="booking-doctor" required disabled>
                             <option value="" disabled selected>Selecione o médico</option>
                         </select>
                     </div>
 
-                    <button type="button" class="btn-primary" id="btn-confirm-booking" style="margin-top: 16px;">Confirmar Agendamento</button>
+                    <div class="input-group">
+                        <label for="booking-date">Data da consulta</label>
+                        <input type="date" id="booking-date" class="booking-date-input" required disabled>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="booking-time">Horário disponível</label>
+                        <select id="booking-time" required disabled>
+                            <option value="" disabled selected>Escolha primeiro o médico e a data</option>
+                        </select>
+                    </div>
+
+                    <div id="booking-feedback" class="booking-feedback" role="status" aria-live="polite"></div>
+                    <button type="submit" class="btn-primary" id="btn-review-booking" disabled>Revisar agendamento</button>
                 </form>
+
+                <section id="booking-review" class="booking-review" hidden>
+                    <h3>Confira os dados da consulta</h3>
+                    <p>Confirme se as informações estão corretas antes de agendar.</p>
+                    <div id="booking-review-content" class="booking-review-content"></div>
+                    <div class="booking-review-actions">
+                        <button type="button" class="btn-secondary" id="btn-edit-booking">Voltar e editar</button>
+                        <button type="button" class="btn-primary" id="btn-confirm-booking">Confirmar agendamento</button>
+                    </div>
+                </section>
             </div>
         </div>
 
@@ -69,11 +81,22 @@
 
             <div class="history-container">
                 <div class="history-header-row">
-                    <h3 id="history-patient-name">Carregando paciente...</h3>
+                    <div><span class="history-overline">Paciente</span><h3 id="history-patient-name">Carregando paciente...</h3></div>
                     <div class="search-box">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        <input type="text" id="search-doctor" placeholder="Filtrar por médico">
+                        <input type="search" id="search-history" placeholder="Buscar médico ou especialidade">
                     </div>
+                </div>
+
+                <div class="history-status-tabs" role="tablist" aria-label="Status das consultas">
+                    <button type="button" class="active" data-history-status="upcoming">Próximas <span>0</span></button>
+                    <button type="button" data-history-status="completed">Concluídas <span>0</span></button>
+                    <button type="button" data-history-status="cancelled">Canceladas <span>0</span></button>
+                </div>
+
+                <div class="history-filters">
+                    <label>Especialidade<select id="history-specialty"><option value="">Todas as especialidades</option></select></label>
+                    <label>Período<select id="history-period"><option value="">Qualquer período</option><option value="30">Até 30 dias</option><option value="90">Até 90 dias</option><option value="365">Até 1 ano</option></select></label>
                 </div>
 
                 <div class="history-list" id="history-list">
@@ -188,7 +211,12 @@
         
     </div>
 
+    <dialog id="documents-dialog" class="documents-dialog">
+        <div class="dialog-heading"><div><span>Documentos médicos</span><h3 id="documents-dialog-title">Consulta</h3></div><button type="button" id="close-documents-dialog" aria-label="Fechar">×</button></div>
+        <div id="documents-dialog-body" class="documents-dialog-body"></div>
+    </dialog>
+
     <script src="js/security.js?v=20261019-3"></script>
-    <script src="js/main.js?v=20261019-4"></script>
+    <script type="module" src="js/patient/dashboard.js?v=20261027-2"></script>
 </body>
 </html>

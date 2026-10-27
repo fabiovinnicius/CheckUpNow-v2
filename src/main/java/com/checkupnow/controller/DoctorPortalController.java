@@ -58,6 +58,7 @@ public class DoctorPortalController {
         if (doctor.isEmpty()) return forbidden();
         return ResponseEntity.ok(Map.of(
                 "id", doctor.get().getId(), "name", doctor.get().getName(), "specialty", doctor.get().getSpecialty(),
+                "specialties", doctor.get().getSpecialties(),
                 "crm", doctor.get().getCrm() == null ? "" : doctor.get().getCrm(),
                 "email", doctor.get().getUser().getEmail()
         ));

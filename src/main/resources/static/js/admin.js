@@ -80,7 +80,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             ? state.specialties.map(item => `<span class="specialty-chip">${escapeHtml(item.name)}<button class="icon-delete" title="Remover" aria-label="Remover ${escapeHtml(item.name)}" data-delete-specialty="${item.id}">×</button></span>`).join('')
             : '<div class="empty-state">Nenhum tipo de consulta cadastrado.</div>';
         document.getElementById('admin-specialty').innerHTML = '<option value="">Selecione o tipo</option>' + state.specialties.map(item => `<option value="${escapeHtml(item.name)}">${escapeHtml(item.name)}</option>`).join('');
-        document.getElementById('new-doctor-specialty').innerHTML = '<option value="">Selecione a especialidade</option>' + state.specialties.map(item => `<option value="${escapeHtml(item.name)}">${escapeHtml(item.name)}</option>`).join('');
+        renderSpecialtyChecklist('new-doctor-specialties');
+    }
+
+    function renderSpecialtyChecklist(containerId, selected = []) {
+        const selectedValues = new Set(selected);
+        document.getElementById(containerId).innerHTML = state.specialties.map(item => `
+            <label class="specialty-option"><input type="checkbox" value="${escapeHtml(item.name)}"
+                ${selectedValues.has(item.name) ? 'checked' : ''}>${escapeHtml(item.name)}</label>`).join('');
+    }
+
+    function selectedSpecialties(containerId) {
+        return [...document.querySelectorAll(`#${containerId} input:checked`)].map(input => input.value);
     }
 
     function renderClients() {
@@ -89,8 +100,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function renderDoctors() {
-        document.getElementById('doctor-list').innerHTML = state.doctors.length ? state.doctors.map(doctor => `<article class="record-card"><div class="record-main"><strong>${escapeHtml(doctor.name)}</strong><p>${escapeHtml(doctor.specialty)}${doctor.crm ? ` · ${escapeHtml(doctor.crm)}` : ''}${doctor.user ? ` · Acesso: ${escapeHtml(doctor.user.email)}` : ' · Sem acesso ao portal'}</p></div><div class="record-side"><button class="secondary-btn" data-manage-doctor="${doctor.id}">Gerenciar agenda</button><button class="danger-btn" data-delete-doctor="${doctor.id}">Excluir perfil</button></div></article>`).join('') : '<div class="empty-state">Nenhum perfil médico cadastrado.</div>';
-        document.getElementById('agenda-doctor').innerHTML = '<option value="">Selecione o médico</option>' + state.doctors.map(doctor => `<option value="${doctor.id}">${escapeHtml(doctor.name)} · ${escapeHtml(doctor.specialty)}</option>`).join('');
+        document.getElementById('doctor-list').innerHTML = state.doctors.length ? state.doctors.map(doctor => `<article class="record-card"><div class="record-main"><strong>${escapeHtml(doctor.name)}</strong><p>${escapeHtml((doctor.specialties || [doctor.specialty]).join(' · '))}${doctor.crm ? ` · ${escapeHtml(doctor.crm)}` : ''}${doctor.user ? ` · Acesso: ${escapeHtml(doctor.user.email)}` : ' · Sem acesso ao portal'}</p></div><div class="record-side"><button class="secondary-btn" data-manage-doctor="${doctor.id}">Editar e gerenciar</button><button class="danger-btn" data-delete-doctor="${doctor.id}">Excluir perfil</button></div></article>`).join('') : '<div class="empty-state">Nenhum perfil médico cadastrado.</div>';
+        document.getElementById('agenda-doctor').innerHTML = '<option value="">Selecione o médico</option>' + state.doctors.map(doctor => `<option value="${doctor.id}">${escapeHtml(doctor.name)} · ${escapeHtml((doctor.specialties || [doctor.specialty]).join(', '))}</option>`).join('');
     }
 
     async function loadAll() {
@@ -200,6 +211,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('doctor-agenda-content').hidden = !doctor;
         if (!doctor) return;
         document.getElementById('agenda-doctor').value = doctor.id;
+        document.getElementById('edit-doctor-name').value = doctor.name;
+        document.getElementById('edit-doctor-crm').value = doctor.crm || '';
+        const editEmail = document.getElementById('edit-doctor-email');
+        editEmail.value = doctor.user?.email || '';
+        editEmail.disabled = !doctor.user;
+        document.getElementById('edit-doctor-email-hint').textContent = doctor.user ? '' : 'O e-mail ficará disponível após criar o acesso ao portal.';
+        renderSpecialtyChecklist('edit-doctor-specialties', doctor.specialties || [doctor.specialty]);
         const accountForm = document.getElementById('doctor-account-form');
         document.getElementById('doctor-account-status').textContent = doctor.user ? `Acesso ativo: ${doctor.user.email}` : 'Este médico ainda não possui conta.';
         [...accountForm.elements].forEach(element => element.disabled = Boolean(doctor.user));
@@ -213,7 +231,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const doctor = await api('/api/admin/doctors', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({
                 name:document.getElementById('new-doctor-name').value,
-                specialty:document.getElementById('new-doctor-specialty').value,
+                specialties:selectedSpecialties('new-doctor-specialties'),
                 crm:document.getElementById('new-doctor-crm').value,
                 email:document.getElementById('new-doctor-email').value,
                 password:document.getElementById('new-doctor-password').value
@@ -221,6 +239,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             event.target.reset(); state.doctors = await api('/api/admin/doctors'); renderDoctors();
             document.getElementById('metric-doctors').textContent = state.doctors.length;
             await loadDoctorAgenda(doctor.id); toast('Médico e conta de acesso cadastrados.');
+        } catch (error) { toast(error.message, true); }
+    });
+    document.getElementById('edit-doctor-form').addEventListener('submit', async event => {
+        event.preventDefault();
+        try {
+            await api(`/api/admin/doctors/${state.agendaDoctorId}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({
+                name:document.getElementById('edit-doctor-name').value,
+                crm:document.getElementById('edit-doctor-crm').value,
+                email:document.getElementById('edit-doctor-email').value,
+                specialties:selectedSpecialties('edit-doctor-specialties')
+            })});
+            state.doctors = await api('/api/admin/doctors');
+            renderDoctors();
+            await loadDoctorAgenda(state.agendaDoctorId);
+            toast('Perfil médico atualizado com sucesso.');
         } catch (error) { toast(error.message, true); }
     });
     document.getElementById('doctor-account-form').addEventListener('submit', async event => {

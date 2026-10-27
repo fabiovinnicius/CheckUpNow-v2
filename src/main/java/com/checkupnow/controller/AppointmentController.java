@@ -90,9 +90,11 @@ public class AppointmentController {
         Doctor selectedDoctor = doctorId == null ? null : doctorRepository.findById(doctorId).orElse(null);
         String appointmentDate = (String) payload.get("appointmentDate");
         String appointmentTime = (String) payload.get("appointmentTime");
+        String specialty = payload.get("specialty") instanceof String value ? value.trim() : null;
         String observation = (String) payload.getOrDefault("observation", "");
 
-        if (doctorId == null || selectedDoctor == null || appointmentDate == null || appointmentTime == null) {
+        if (doctorId == null || selectedDoctor == null || appointmentDate == null || appointmentTime == null
+                || specialty == null || !selectedDoctor.getSpecialties().contains(specialty)) {
             return ResponseEntity.badRequest().body(Map.of("message", "Todos os campos do agendamento são obrigatórios."));
         }
 
@@ -126,7 +128,8 @@ public class AppointmentController {
                     .body(Map.of("message", "Este médico já possui uma consulta neste horário."));
         }
 
-        Appointment appointment = new Appointment(userOpt.get(), selectedDoctor, displayDate, displayTime, observation);
+        Appointment appointment = new Appointment(userOpt.get(), selectedDoctor, specialty,
+                displayDate, displayTime, observation);
         Appointment saved = appointmentRepository.save(appointment);
 
         return ResponseEntity.ok(AppointmentResponse.from(saved));

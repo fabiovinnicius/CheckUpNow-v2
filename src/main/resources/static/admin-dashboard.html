@@ -7,7 +7,7 @@
     <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/style.css">
     <link rel="stylesheet" href="css/global.css">
-    <link rel="stylesheet" href="css/admin.css?v=20261015-1">
+    <link rel="stylesheet" href="css/admin.css?v=20261027-2">
     <link rel="stylesheet" href="css/medical-documents.css?v=20261019-1">
 </head>
 <body>
@@ -100,7 +100,7 @@
                     <div class="panel-heading"><div><h2>Cadastrar novo médico</h2><p>Cria o perfil profissional e a conta de acesso ao portal médico de uma só vez.</p></div></div>
                     <form id="create-doctor-form" class="admin-form">
                         <label>Nome completo<input id="new-doctor-name" type="text" maxlength="100" placeholder="Ex.: Dra. Maria Souza" required></label>
-                        <label>Especialidade<select id="new-doctor-specialty" required><option value="">Selecione a especialidade</option></select></label>
+                        <fieldset class="specialty-field form-wide"><legend>Especialidades</legend><div id="new-doctor-specialties" class="specialty-checklist"></div></fieldset>
                         <label>CRM<input id="new-doctor-crm" type="text" maxlength="40" placeholder="Ex.: CRM/SP 123456" required></label>
                         <label>E-mail de acesso<input id="new-doctor-email" type="email" placeholder="medico@clinica.com" required></label>
                         <label>Senha inicial<input id="new-doctor-password" type="password" minlength="8" placeholder="Mínimo 8 caracteres" required></label>
@@ -112,6 +112,16 @@
                     <label class="admin-field">Médico<select id="agenda-doctor"><option value="">Selecione o médico</option></select></label>
                 </div>
                 <div id="doctor-agenda-content" hidden>
+                    <div class="admin-panel agenda-section">
+                        <div class="panel-heading"><div><h2>Editar perfil médico</h2><p>Atualize os dados profissionais e as especialidades atendidas.</p></div></div>
+                        <form id="edit-doctor-form" class="admin-form">
+                            <label>Nome completo<input id="edit-doctor-name" type="text" maxlength="100" required></label>
+                            <label>CRM<input id="edit-doctor-crm" type="text" maxlength="40" required></label>
+                            <label>E-mail de acesso<input id="edit-doctor-email" type="email"><small id="edit-doctor-email-hint"></small></label>
+                            <fieldset class="specialty-field form-wide"><legend>Especialidades</legend><div id="edit-doctor-specialties" class="specialty-checklist"></div></fieldset>
+                            <button class="btn-primary form-action" type="submit">Salvar perfil</button>
+                        </form>
+                    </div>
                     <div class="admin-panel agenda-section">
                         <div class="panel-heading"><div><h2>Acesso ao portal</h2><p id="doctor-account-status">Este médico ainda não possui conta.</p></div></div>
                         <form id="doctor-account-form" class="inline-create-form"><input id="doctor-account-email" type="email" placeholder="E-mail do médico" required><input id="doctor-account-password" type="password" minlength="8" placeholder="Senha (mínimo 8 caracteres)" required><button class="btn-primary compact" type="submit">Criar acesso</button></form>
@@ -130,6 +140,6 @@
         </section>
     </main>
     <script src="js/security.js?v=20261019-3"></script>
-    <script src="js/admin.js?v=20261019-2"></script>
+    <script src="js/admin.js?v=20261027-2"></script>
 </body>
 </html>

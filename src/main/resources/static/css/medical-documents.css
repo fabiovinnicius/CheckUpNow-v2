@@ -6,7 +6,11 @@
 .document-empty { color: #7a837c; font-size: 11px; }
 .medical-upload-form { display: grid; grid-template-columns: 120px 1fr minmax(190px, 1.3fr) auto; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #e4eae5; }
 .medical-upload-form select,.medical-upload-form input { min-height: 38px; border: 1px solid #a9b3ab; border-radius: 9px; padding: 7px 9px; font: inherit; font-size: 12px; min-width: 0; background: white; }
-.medical-upload-form input[type=file] { padding: 7px; }
-.upload-button { width: auto; min-height: 38px; padding: 7px 12px; font-size: 12px; }
+.medical-upload-form input[type=file] { padding: 4px 7px; color: #59645c; }
+.medical-upload-form input[type=file]::file-selector-button { border: 1px solid #bcd9c3; border-radius: 7px; background: #eef9f1; color: #226336; padding: 7px 10px; margin-right: 9px; font: inherit; font-weight: 700; cursor: pointer; }
+.medical-upload-form input[type=file]::file-selector-button:hover { background: #dff3e4; }
+.upload-button { width: auto; min-height: 38px; padding: 8px 14px; border-radius: 9px; font-size: 12px; box-shadow: 0 4px 10px rgba(35, 126, 58, .14); }
 .upload-button:disabled { opacity: .55; cursor: wait; }
+.doctor-action { width: auto; min-height: 44px; padding: 11px 20px; border-radius: 11px; font-size: 14px; box-shadow: 0 5px 14px rgba(35, 126, 58, .16); }
+.doctor-action:disabled { opacity: .62; cursor: wait; box-shadow: none; }
 @media (max-width: 720px) { .medical-upload-form { grid-template-columns: 1fr; } }
